@@ -673,7 +673,7 @@ public class Geometry3D {
 	    if(mNormalBufferInfo != null) buffers[2] = mNormalBufferInfo.bufferHandle;
 	    if(mTexCoordBufferInfo != null) buffers[3] = mTexCoordBufferInfo.bufferHandle;
 	    if(mColorBufferInfo != null) buffers[4] = mColorBufferInfo.bufferHandle;
-	    GLES20.glDeleteBuffers(buffers.length, buffers, 0);
+	    //GLES20.glDeleteBuffers(buffers.length, buffers, 0);
 
 	    if(mVertices != null) mVertices.clear();
 	    if(mNormals != null) mNormals.clear();
