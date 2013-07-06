@@ -91,6 +91,19 @@ public class MeshExporter {
 			throw new ExporterException(e);
 		}
 	}
+	
+	/**
+	 * The file to be exported to.
+	 * 
+	 * @return
+	 */
+	public File getExportFile() {
+		File path = mExportDir;
+		if (mExportDir == null)
+			path = Environment.getExternalStorageDirectory();
+
+		return new File(path, mFileName);
+	}
 
 	/**
 	 * Determine if the extension defined by the exporter should be automatically appended. This is true by default.
@@ -116,19 +129,6 @@ public class MeshExporter {
 	 * @param exporter
 	 */
 	protected void configureExporter(AExporter exporter) {}
-
-	/**
-	 * The file to be exported to.
-	 * 
-	 * @return
-	 */
-	protected File getExportFile() {
-		File path = mExportDir;
-		if (mExportDir == null)
-			path = Environment.getExternalStorageDirectory();
-
-		return new File(path, mFileName);
-	}
 
 	public static final class ExporterException extends RuntimeException {
 
