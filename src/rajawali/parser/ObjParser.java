@@ -2,99 +2,15 @@ package rajawali.parser;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Stack;
-import java.util.StringTokenizer;
 
-import rajawali.BaseObject3D;
-import rajawali.materials.AMaterial;
-import rajawali.materials.DiffuseMaterial;
-import rajawali.materials.NormalMapMaterial;
-import rajawali.materials.NormalMapPhongMaterial;
-import rajawali.materials.PhongMaterial;
-import rajawali.materials.textures.ATexture.TextureException;
-import rajawali.materials.textures.NormalMapTexture;
-import rajawali.materials.textures.SpecularMapTexture;
 import rajawali.materials.textures.Texture;
 import rajawali.materials.textures.TextureManager;
 import rajawali.renderer.RajawaliRenderer;
 import rajawali.util.RajLog;
-import rajawali.wallpaper.Wallpaper;
 import android.content.res.Resources;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.util.Log;
 
-/**
- * The most important thing is that the model should be triangulated. Rajawali doesn�t accept quads, only tris. In
- * Blender, this is an option you can select in the exporter. In a program like MeshLab, this is done automatically. At
- * the moment, Rajawali also doesn�t support per-face textures. This is on the todo list.
- * <p>
- * The options that should be checked when exporting from blender are:
- * <ul>
- * <li>Apply Modifiers
- * <li>Include Normals
- * <li>Include UVs
- * <li>Write Materials (if applicable)
- * <li>Triangulate Faces
- * <li>Objects as OBJ Objects
- * </ul>
- * <p>
- * The files should be written to your �res/raw� folder in your ADT project. Usually you�ll get errors in the console
- * when you do this. The Android SDK ignores file extensions so it�ll regard the .obj and .mtl files as duplicates. The
- * way to fix this is to rename the files. For instance: - myobject.obj > myobject_obj - myobject.mtl > myobject_mtl The
- * parser replaces any dots in file names, so this should be picked up automatically by the parser. Path fragments in
- * front of file names (also texture paths) are discarded so you can leave them as is.
- * <p>
- * The texture file paths in the .mtl files are stripped off periods and path fragments as well. The textures need to be
- * placed in the res/drawable-nodpi folder.
- * <p>
- * If it still throws errors check if there are any funny characters or unsupported texture formats (like bmp).
- * <p>
- * Just as a reminder, here�s the code that takes care of the parsing:
- * 
- * <pre>
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * {
- * 	&#064;code
- * 	ObjParser objParser = new ObjParser(mContext.getResources(), mTextureManager, R.raw.myobject_obj);
- * 	objParser.parse();
- * 	BaseObject3D mObject = objParser.getParsedObject();
- * 	mObject.setLight(mLight);
- * 	addChild(mObject);
- * }
- * </pre>
- * 
- * @author dennis.ippel
- * 
- */
 public class ObjParser extends AMeshParser {
 
 	private enum LineType {
@@ -177,7 +93,8 @@ public class ObjParser extends AMeshParser {
 				case F: // Face
 					final FaceData face = new FaceData();
 
-					createGroup(null);
+					if (mCurrentMaterialGroup == null)
+						createGroup(null);
 
 					for (int i = 1; i < 4; i++) {
 						int nextSlash = lineArr[i].indexOf("/");
@@ -198,10 +115,11 @@ public class ObjParser extends AMeshParser {
 						prev = nextSlash + 1;
 
 						// Normal Indices
-						if (lineArr[i].length() >= 5)
+						if (lineArr[i].length() >= 5) {
 							face.normalIndices.add(parseIndex(
 									Integer.parseInt(lineArr[i].substring(prev, lineArr[i].length())),
 									mNormals.size()));
+						}
 
 						face.indexIds.add(vertexIndice);
 					}
@@ -250,10 +168,12 @@ public class ObjParser extends AMeshParser {
 			for (int i = 0; i < uvs.length; i++)
 				uvs[i] = mUvs.get(i);
 
-			final ArrayList<Integer> indis = mCurrentMaterialGroup.faces.get(0).vertexIndices;
-			final int[] indi = new int[indis.size()];
-			for (int i = 0; i < indi.length; i++)
-				indi[i] = indis.get(i);
+			final int[] indi = new int[mCurrentMaterialGroup.faces.size() * 3];
+			for (int k = 0, j = mCurrentMaterialGroup.faces.size(); k < j; k++) {
+				final ArrayList<Integer> indis = mCurrentMaterialGroup.faces.get(k).vertexIndices;
+				for (int i = 0, l = indis.size(); i < l; i++)
+					indi[(k * 3) + i] = indis.get(i);
+			}
 
 			mRootObject.setData(verts, norms, uvs, null, indi);
 		} catch (Exception e) {
