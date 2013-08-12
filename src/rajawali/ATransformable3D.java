@@ -13,8 +13,10 @@
 package rajawali;
 
 import rajawali.bounds.IBoundingVolume;
+import rajawali.math.Matrix4;
 import rajawali.math.Quaternion;
 import rajawali.math.vector.Vector3;
+import rajawali.math.vector.Vector3.Axis;
 import rajawali.renderer.AFrameTask;
 import rajawali.scenegraph.IGraphNode;
 import rajawali.scenegraph.IGraphNodeMember;
@@ -115,6 +117,71 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 
 	public double getZ() {
 		return mPosition.z;
+	}
+	
+	/**
+	 * Rotates this {@link ATransformable3D} by the rotation described by the provided
+	 * {@link Quaternion}.
+	 * 
+	 * @param quat {@link Quaternion} describing the additional rotation.
+	 * @return A reference to this {@link ATransformable3D} to facilitate chaining.
+	 */
+	public ATransformable3D rotate(final Quaternion quat) {
+		mOrientation.multiply(quat);
+		return this;
+	}
+	
+	/**
+	 * Rotates this {@link ATransformable3D} by the rotation described by the provided
+	 * {@link Vector3} axis and angle of rotation.
+	 * 
+	 * @param axis {@link Vector3} The axis of rotation.
+	 * @param angle double The angle of rotation in degrees.
+	 * @return A reference to this {@link ATransformable3D} to facilitate chaining.
+	 */
+	public ATransformable3D rotate(final Vector3 axis, double angle) {
+		mOrientation.multiply(mTmpOrientation.fromAngleAxis(axis, angle));
+		return this;
+	}
+	
+	/**
+	 * Rotates this {@link ATransformable3D} by the rotation described by the provided
+	 * {@link Axis} cardinal axis and angle of rotation.
+	 * 
+	 * @param axis {@link Axis} The axis of rotation.
+	 * @param angle double The angle of rotation in degrees.
+	 * @return A reference to this {@link ATransformable3D} to facilitate chaining.
+	 */
+	public ATransformable3D rotate(final Axis axis, double angle) {
+		mOrientation.multiply(mTmpOrientation.fromAngleAxis(axis, angle));
+		return this;
+	}
+	
+	/**
+	 * Rotates this {@link ATransformable3D} by the rotation described by the provided
+	 * axis and angle of rotation.
+	 * 
+	 * @param x double The x component of the axis of rotation.
+	 * @param y double The y component of the axis of rotation.
+	 * @param z double The z component of the axis of rotation.
+	 * @param angle double The angle of rotation in degrees.
+	 * @return A reference to this {@link ATransformable3D} to facilitate chaining.
+	 */
+	public ATransformable3D rotate(double x, double y, double z, double angle) {
+		mOrientation.multiply(mTmpOrientation.fromAngleAxis(x, y, z, angle));
+		return this;
+	}
+	
+	/**
+	 * Rotates this {@link ATransformable3D} by the rotation described by the provided
+	 * {@link Matrix4}.
+	 * 
+	 * @param matrix {@link Matrix4} describing the rotation to apply.
+	 * @return A reference to this {@link ATransformable3D} to facilitate chaining.
+	 */
+	public ATransformable3D rotate(final Matrix4 matrix) {
+		mOrientation.multiply(mTmpOrientation.fromMatrix(matrix));
+		return this;
 	}
 	
 	public void rotateAround(Vector3 axis, double angle) {
