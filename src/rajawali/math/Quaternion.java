@@ -23,6 +23,9 @@ import rajawali.math.vector.Vector3.Axis;
  * Rewritten July 27, 2013 by Jared Woolston with heavy influence from libGDX
  * @see https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/math/Quaternion.java
  * 
+ * This class is not thread safe and must be confined to a single thread or protected by
+ * some external locking mechanism if necessary. All static methods are thread safe.
+ * 
  * @author dennis.ippel
  * @author Jared Woolston (jwoolston@tenkiv.com)
  */
@@ -35,9 +38,11 @@ public final class Quaternion {
 	public double w, x, y, z;
 	
 	//Scratch members
-	private Vector3 mTmpVec1 = new Vector3();
-	private Vector3 mTmpVec2 = new Vector3();
-	private Vector3 mTmpVec3 = new Vector3();
+	private final Vector3 mTmpVec1 = new Vector3();
+	private final Vector3 mTmpVec2 = new Vector3();
+	private final Vector3 mTmpVec3 = new Vector3();
+	private Quaternion mTmpQuat; //Lazy loading here to prevent an endless chain
+	//Guarded by Quaternion.class
 	private static final Quaternion sTmp1 = new Quaternion(0, 0, 0, 0);
 	private static final Quaternion sTmp2 = new Quaternion(0, 0, 0, 0);
 	
@@ -298,6 +303,36 @@ public final class Quaternion {
 	}
 	
 	/**
+	 * Sets this {@link Quaternion} from the given Euler angles.
+	 * 
+	 * @param yaw double The yaw angle in radians.
+	 * @param pitch double The pitch angle in radians.
+	 * @param roll double The roll angle in radians.
+	 * @return A reference to this {@link Vector3} to facilitate chaining.
+	 */
+	public Quaternion fromEulerRadians(double yaw, double pitch, double roll) {
+		double num9 = roll * 0.5;
+		double num6 = Math.sin(num9);
+		double num5 = Math.cos(num9);
+		double num8 = pitch * 0.5;
+		double num4 = Math.sin(num8);
+		double num3 = Math.cos(num8);
+		double num7 = yaw * 0.5;
+		double num2 = Math.sin(num7);
+		double num = Math.cos(num7);
+		double f1 = num * num4;
+		double f2 = num2 * num3;
+		double f3 = num * num3;
+		double f4 = num2 * num4;
+		
+		x = (f1 * num5) + (f2 * num6);
+		y = (f2 * num5) - (f1 * num6);
+		z = (f3 * num6) - (f4 * num5);
+		w = (f3 * num5) + (f4 * num6);
+		return this;
+	}
+	
+	/**
 	 * Sets this {@link Quaternion}'s components from the given input matrix.
 	 * 
 	 * @param rotMatrix double[] The rotation matrix. 4x4 column major order.
@@ -467,8 +502,9 @@ public final class Quaternion {
 	 */
 	public Vector3 multiply(final Vector3 vector) {
 		mTmpVec3.setAll(x, y, z);
-		mTmpVec1 = Vector3.crossAndCreate(mTmpVec3, vector);
-		mTmpVec2 = Vector3.crossAndCreate(mTmpVec3, mTmpVec1);
+		mTmpVec1.setAll(mTmpVec3.cross(vector));
+		mTmpVec3.setAll(x, y, z);
+		mTmpVec2.setAll(mTmpVec3.cross(mTmpVec1));
 		mTmpVec1.multiply(2.0 * w);
 		mTmpVec2.multiply(2.0);
 
@@ -490,6 +526,73 @@ public final class Quaternion {
 		final double newZ = quat.w * z + quat.z * w + quat.x * y - quat.y * x;
 		final double newW = quat.w * w - quat.x * x + quat.y * y - quat.z * z;
 		return setAll(newW, newX, newY, newZ);
+	}
+	
+	/**
+	 * Rotates this {@link Quaternion} by the rotation described by the provided
+	 * {@link Quaternion}.
+	 * 
+	 * @param quat {@link Quaternion} describing the additional rotation.
+	 * @return A reference to this {@link Quaternion} to facilitate chaining.
+	 */
+	public Quaternion rotate(final Quaternion quat) {
+		return multiply(quat);
+	}
+	
+	/**
+	 * Rotates this {@link Quaternion} by the rotation described by the provided
+	 * {@link Vector3} axis and angle of rotation.
+	 * 
+	 * @param axis {@link Vector3} The axis of rotation.
+	 * @param angle double The angle of rotation in degrees.
+	 * @return A reference to this {@link Quaternion} to facilitate chaining.
+	 */
+	public Quaternion rotate(final Vector3 axis, double angle) {
+		if (mTmpQuat == null) mTmpQuat = new Quaternion();
+		mTmpQuat.fromAngleAxis(axis, angle);
+		return multiply(mTmpQuat);
+	}
+	
+	/**
+	 * Rotates this {@link Quaternion} by the rotation described by the provided
+	 * {@link Axis} cardinal axis and angle of rotation.
+	 * 
+	 * @param axis {@link Axis} The axis of rotation.
+	 * @param angle double The angle of rotation in degrees.
+	 * @return A reference to this {@link Quaternion} to facilitate chaining.
+	 */
+	public Quaternion rotate(final Axis axis, double angle) {
+		if (mTmpQuat == null) mTmpQuat = new Quaternion();
+		mTmpQuat.fromAngleAxis(axis, angle);
+		return multiply(mTmpQuat);
+	}
+	
+	/**
+	 * Rotates this {@link Quaternion} by the rotation described by the provided
+	 * axis and angle of rotation.
+	 * 
+	 * @param x double The x component of the axis of rotation.
+	 * @param y double The y component of the axis of rotation.
+	 * @param z double The z component of the axis of rotation.
+	 * @param angle double The angle of rotation in degrees.
+	 * @return A reference to this {@link Quaternion} to facilitate chaining.
+	 */
+	public Quaternion rotate(double x, double y, double z, double angle) {
+		if (mTmpQuat == null) mTmpQuat = new Quaternion();
+		mTmpQuat.fromAngleAxis(x, y, z, angle);
+		return multiply(mTmpQuat);
+	}
+	
+	/**
+	 * Rotates this {@link Quaternion} by the rotation described by the provided
+	 * {@link Matrix4}.
+	 * 
+	 * @param matrix {@link Matrix4} describing the rotation to apply.
+	 * @return A reference to this {@link Quaternion} to facilitate chaining.
+	 */
+	public Quaternion rotate(final Matrix4 matrix) {
+		if (mTmpQuat == null) mTmpQuat = new Quaternion();
+		return multiply(mTmpQuat.fromMatrix(matrix));
 	}
 	
 	/**
@@ -864,11 +967,11 @@ public final class Quaternion {
 	 * @param shortestPath boolean indicating if the shortest path should be used.
 	 * @return {@link Quaternion} The interpolated {@link Quaternion}.
 	 */
-	public static Quaternion lerp(final Quaternion rkP, final Quaternion rkQ, double t, boolean shortestPath) {
+	public synchronized static Quaternion lerp(final Quaternion rkP, final Quaternion rkQ, double t, boolean shortestPath) {
 		sTmp1.setAll(rkP);
 		sTmp2.setAll(rkQ);
 		double fCos = sTmp1.dot(sTmp2);
-		if (fCos < 0.0f && shortestPath) {
+		if (fCos < 0.0 && shortestPath) {
 			sTmp2.inverse();
 			sTmp2.subtract(sTmp1);
 			sTmp2.multiply(t);
@@ -901,7 +1004,7 @@ public final class Quaternion {
 	 * Gets the roll angle from this {@link Quaternion}. 
 	 * 
 	 * @param reprojectAxis boolean Whether or not to reproject the axes.
-	 * @return double The roll angle in radians.
+	 * @return double The roll angle in degrees.
 	 */
 	public double getRoll(boolean reprojectAxis) {
 		if (reprojectAxis) {
@@ -913,9 +1016,9 @@ public final class Quaternion {
 			double fTyy = fTy * y;
 			double fTzz = fTz * z;
 
-			return Math.atan2(fTxy + fTwz, 1.0 - (fTyy + fTzz));
+			return Math.toDegrees(Math.atan2(fTxy + fTwz, 1.0 - (fTyy + fTzz)));
 		} else {
-			return Math.atan2(2 * (x * y + w * z), w * w + x * x - y * y - z * z);
+			return Math.toDegrees(Math.atan2(2 * (x * y + w * z), w * w + x * x - y * y - z * z));
 		}
 	}
 
@@ -923,7 +1026,7 @@ public final class Quaternion {
 	 * Gets the pitch angle from this {@link Quaternion}. 
 	 * 
 	 * @param reprojectAxis boolean Whether or not to reproject the axes.
-	 * @return double The pitch angle in radians.
+	 * @return double The pitch angle in degrees.
 	 */
 	public double getPitch(boolean reprojectAxis) {
 		if (reprojectAxis) {
@@ -935,9 +1038,9 @@ public final class Quaternion {
 			double fTyz = fTz * y;
 			double fTzz = fTz * z;
 
-			return Math.atan2(fTyz + fTwx, 1.0 - (fTxx + fTzz));
+			return Math.toDegrees(Math.atan2(fTyz + fTwx, 1.0 - (fTxx + fTzz)));
 		} else {
-			return Math.atan2(2 * (y * z + w * x), w * w - x * x - y * y + z * z);
+			return Math.toDegrees(Math.atan2(2 * (y * z + w * x), w * w - x * x - y * y + z * z));
 		}
 	}
 
@@ -945,7 +1048,7 @@ public final class Quaternion {
 	 * Gets the yaw angle from this {@link Quaternion}. 
 	 * 
 	 * @param reprojectAxis boolean Whether or not to reproject the axes.
-	 * @return double The yaw angle in radians.
+	 * @return double The yaw angle in degrees.
 	 */
 	public double getYaw(boolean reprojectAxis) {
 		if (reprojectAxis) {
@@ -957,10 +1060,10 @@ public final class Quaternion {
 			double fTxz = fTz * x;
 			double fTyy = fTy * y;
 
-			return Math.atan2(fTxz + fTwy, 1.0 - (fTxx + fTyy));
+			return Math.toDegrees(Math.atan2(fTxz + fTwy, 1.0 - (fTxx + fTyy)));
 
 		} else {
-			return Math.asin(-2 * (x * z - w * y));
+			return Math.toDegrees(Math.asin(-2 * (x * z - w * y)));
 		}
 	}
 	
