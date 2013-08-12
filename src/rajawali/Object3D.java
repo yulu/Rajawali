@@ -197,7 +197,7 @@ public class Object3D extends ATransformable3D implements Comparable<Object3D>, 
 	}
 	
 	public void calculateModelMatrix(final Matrix4 parentMatrix) {
-		setOrientation();
+		//setOrientation();
 		if (mLookAt == null) {
 			mOrientation.toRotationMatrix(mRotationMatrix);
 		} else {
@@ -681,7 +681,7 @@ public class Object3D extends ATransformable3D implements Comparable<Object3D>, 
 	public Object3D clone(boolean copyMaterial) {
 		Object3D clone = new Object3D();
 		cloneTo(clone, copyMaterial);
-		clone.setRotation(getRotation());
+		clone.setOrientation(mOrientation);
 		clone.setScale(getScale());
 		return clone;
 	}

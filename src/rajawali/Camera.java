@@ -64,13 +64,14 @@ public class Camera extends ATransformable3D {
 		synchronized (mFrustumLock) {
 			if (mLookAt != null) {
 				mVMatrix.setToLookAt(mPosition, mLookAt, mUpAxis);
-				mLocalOrientation.fromEuler(mRotation.y, mRotation.z, mRotation.x);
+				mLocalOrientation.setAll(mOrientation);
+				//mLocalOrientation.fromEuler(mRotation.y, mRotation.z, mRotation.x);
 				mVMatrix.rotate(mLocalOrientation);
 			} else {
-				if (mUseRotationMatrix == false && mRotationDirty) {
+				/*if (mUseRotationMatrix == false) {// && mRotationDirty) {
 					setOrientation();
 					mRotationDirty = false;
-				}
+				}*/
 				if (mUseRotationMatrix == false) {
 					mOrientation.toRotationMatrix(mVMatrix);
 				} else {

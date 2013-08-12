@@ -40,14 +40,14 @@ public class DirectionalLight extends ALight {
 	}
 
 	public double[] getDirection() {
-		setOrientation();
+		//setOrientation();
 		mDirectionVec.setAll(mForwardAxis);
 		
 		if (mLookAt == null) {
 			mOrientation.toRotationMatrix(mRotationMatrix);
-		} else {
+		} /*else {
 			System.arraycopy(mLookAtMatrix, 0, mRotationMatrix, 0, 16);
-		}
+		}*/
 		mDirectionVec.multiply(mRotationMatrix);
 		mDirection[0] = mDirectionVec.x;
 		mDirection[1] = mDirectionVec.y;

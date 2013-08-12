@@ -13,8 +13,6 @@
 package rajawali;
 
 import rajawali.bounds.IBoundingVolume;
-import rajawali.math.Matrix;
-import rajawali.math.Matrix4;
 import rajawali.math.Quaternion;
 import rajawali.math.vector.Vector3;
 import rajawali.renderer.AFrameTask;
@@ -22,121 +20,103 @@ import rajawali.scenegraph.IGraphNode;
 import rajawali.scenegraph.IGraphNodeMember;
 
 public abstract class ATransformable3D extends AFrameTask implements IGraphNodeMember {
-	protected Vector3 mPosition, mRotation, mScale;
-	protected Quaternion mOrientation;
-	protected Quaternion mTmpOrientation;
-	protected Vector3 mRotationAxis;
-	protected boolean mRotationDirty;
+	protected final Vector3 mPosition;
+	protected final Vector3 mScale;
+	protected final Quaternion mOrientation;
+	protected final Quaternion mTmpOrientation;
 	protected Vector3 mLookAt;
-	protected Vector3 mTmpAxis, mTmpVec;
-	protected boolean mIsCamera, mQuatWasSet;
-	protected Vector3 mTmpRotX = new Vector3();
-	protected Vector3 mTmpRotY = new Vector3();
-	protected Vector3 mTmpRotZ = new Vector3();
-	protected double[] mLookAtMatrix = new double[16];
+	protected boolean mIsCamera;
 	
 	protected IGraphNode mGraphNode;
 	protected boolean mInsideGraph = false; //Default to being outside the graph
 	
+	/**
+	 * Default constructor for {@link ATransformable3D}.
+	 */
 	public ATransformable3D() {
 		mPosition = new Vector3();
-		mRotation = new Vector3();
 		mScale = new Vector3(1, 1, 1);
 		mOrientation = new Quaternion();
 		mTmpOrientation = new Quaternion();
-		mTmpAxis = new Vector3();
-		mTmpVec = new Vector3();
-		mRotationDirty = true;
 	}
 	
+	
+	
+	//--------------------------------------------------
+	// Translation Methods
+	//--------------------------------------------------
+	
+	/**
+	 * Sets the position of this {@link ATransformable3D}. If this is 
+	 * part of a scene graph, the graph will be notified of the change.
+	 * 
+	 * @param position {@link Vector3} The new position. This is copied
+	 * into an internal store and can be used after this method returns.
+	 */
 	public void setPosition(Vector3 position) {
 		mPosition.setAll(position);
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 
+	/**
+	 * Sets the position of this {@link ATransformable3D}. If this is 
+	 * part of a scene graph, the graph will be notified of the change.
+	 * 
+	 * @param x double The x coordinate new position.
+	 * @param y double The y coordinate new position.
+	 * @param z double The z coordinate new position.
+	 */
 	public void setPosition(double x, double y, double z) {
 		mPosition.setAll(x, y, z);
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 
-	public Vector3 getPosition() {
-		return mPosition;
-	}
-	
+	/**
+	 * Sets the x component of the position for this {@link ATransformable3D}.
+	 * 
+	 * @param x double The new x component for the position.
+	 */
 	public void setX(double x) {
 		mPosition.x = x;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
-
-	public double getX() {
-		return mPosition.x;
-	}
-
+	
+	/**
+	 * Sets the y component of the position for this {@link ATransformable3D}.
+	 * 
+	 * @param y double The new y component for the position.
+	 */
 	public void setY(double y) {
 		mPosition.y = y;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
+	}
+	
+	/**
+	 * Sets the z component of the position for this {@link ATransformable3D}.
+	 * 
+	 * @param z double The new z component for the position.
+	 */
+	public void setZ(double z) {
+		mPosition.z = z;
+		if (mGraphNode != null) mGraphNode.updateObject(this);
+	}
+	
+	public Vector3 getPosition() {
+		return mPosition;
+	}
+	
+	public double getX() {
+		return mPosition.x;
 	}
 
 	public double getY() {
 		return mPosition.y;
 	}
 
-	public void setZ(double z) {
-		mPosition.z = z;
-		if (mGraphNode != null) mGraphNode.updateObject(this);
-	}
-
 	public double getZ() {
 		return mPosition.z;
 	}
 	
-
-	public void setOrientation() {
-		if(!mRotationDirty && mLookAt == null) return;
-
-		mOrientation.identity();
-		if(mLookAt != null) {			
-			mTmpRotZ.setAll(mLookAt)
-				.subtract(mPosition)
-				.normalize();
-			
-			if(mTmpRotZ.isZero()) mTmpRotZ.z = 1;
-			
-			mTmpRotX.setAll(Vector3.Y)
-				.cross(mTmpRotZ)
-				.normalize();
-			
-			if(mTmpRotX.isZero()) {
-				mTmpRotZ.x += .0001f;
-				mTmpRotX.cross(mTmpRotZ).normalize();
-			}
-			
-			mTmpRotY.setAll(mTmpRotZ);
-			mTmpRotY.cross(mTmpRotX);
-			
-			Matrix.setIdentityM(mLookAtMatrix, 0);
-			mLookAtMatrix[Matrix4.M00] = mTmpRotX.x;
-			mLookAtMatrix[Matrix4.M10] = mTmpRotX.y;
-			mLookAtMatrix[Matrix4.M20] = mTmpRotX.z;
-			mLookAtMatrix[Matrix4.M01] = mTmpRotY.x;
-			mLookAtMatrix[Matrix4.M11] = mTmpRotY.y;
-			mLookAtMatrix[Matrix4.M21] = mTmpRotY.z;
-			mLookAtMatrix[Matrix4.M02] = mTmpRotZ.x;
-			mLookAtMatrix[Matrix4.M12] = mTmpRotZ.y;
-			mLookAtMatrix[Matrix4.M22] = mTmpRotZ.z;
-			
-			//TODO: This will be fixed by Issue #968
-			mOrientation.fromRotationMatrix(mLookAtMatrix);
-		} else {
-			mOrientation.multiply(mTmpOrientation.fromAngleAxis(Vector3.Y, mRotation.y));
-			mOrientation.multiply(mTmpOrientation.fromAngleAxis(Vector3.Z, mRotation.z));
-			mOrientation.multiply(mTmpOrientation.fromAngleAxis(Vector3.X, mRotation.x));
-			if(mIsCamera)
-				mOrientation.inverse();
-		}
-		//if (mGraphNode != null) mGraphNode.updateObject(this); //TODO: This may cause problems
-	}
-
 	public void rotateAround(Vector3 axis, double angle) {
 		rotateAround(axis, angle, true);
 	}
@@ -148,70 +128,54 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
  		} else {
  			mOrientation.fromAngleAxis(axis, angle);
  		}
-		mRotationDirty = false;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 	
 	public Quaternion getOrientation(Quaternion qt) {
-		setOrientation(); // Force mOrientation to be recalculated
 		qt.setAll(mOrientation); 
 		return  qt;
 	}
 	
 	public void setOrientation(Quaternion quat) {
 		mOrientation.setAll(quat);
-		mRotationDirty = false;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 	
 	public void setRotation(double rotX, double rotY, double rotZ) {
-		mRotation.x = rotX;
-		mRotation.y = rotY;
-		mRotation.z = rotZ;
-		mRotationDirty = true;
+		mOrientation.fromEuler(rotY, rotZ, rotX);
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 	
-	public void setRotation(double[] rotationMatrix)
-	{
-		//TODO: This will be fixed by issue #968
-		mOrientation.fromRotationMatrix(rotationMatrix);
-	}
-	
 	public void setRotX(double rotX) {
-		mRotation.x = rotX;
-		mRotationDirty = true;
+		mTmpOrientation.setAll(mOrientation);
+		mOrientation.fromEuler(mTmpOrientation.getYaw(false), mTmpOrientation.getPitch(false), rotX);
 	}
 
 	public double getRotX() {
-		return mRotation.x;
+		return mOrientation.getRoll(false);
 	}
 
 	public void setRotY(double rotY) {
-		mRotation.y = rotY;
-		mRotationDirty = true;
+		mTmpOrientation.setAll(mOrientation);
+		mOrientation.fromEuler(rotY, mTmpOrientation.getPitch(false), mTmpOrientation.getRoll(false));
 	}
 
 	public double getRotY() {
-		return mRotation.y;
+		return mOrientation.getYaw(false);
 	}
 
 	public void setRotZ(double rotZ) {
-		mRotation.z = rotZ;
-		mRotationDirty = true;
+		mTmpOrientation.setAll(mOrientation);
+		mOrientation.fromEuler(mTmpOrientation.getYaw(false), rotZ, mTmpOrientation.getRoll(false));
+		mOrientation.normalize();
 	}
 
 	public double getRotZ() {
-		return mRotation.z;
+		return mOrientation.getPitch(false);
 	}
 	
-	public Vector3 getRotation() {
-		return mRotation;
-	}
-
 	public void setRotation(Vector3 rotation) {
-		mRotation.setAll(rotation);
-		mRotationDirty = true;
+		mOrientation.fromEuler(rotation.y, rotation.z, rotation.x);
 	}
 
 	public void setScale(double scale) {
@@ -260,7 +224,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	}
 
 	public void setScale(Vector3 scale) {
-		mScale = scale;
+		mScale.setAll(scale);
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 
@@ -273,7 +237,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 		mLookAt.x = x;
 		mLookAt.y = y;
 		mLookAt.z = z;
-		mRotationDirty = true;
+		//mRotationDirty = true;
 	}
 	
 	public void setLookAt(Vector3 lookAt) {
