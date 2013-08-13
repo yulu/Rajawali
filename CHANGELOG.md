@@ -93,6 +93,25 @@ and return the state when they are done. This means the GL state is not managed 
 improvement over the previous method of explicitly declaring the state on each render for each object and has in some testing shown a
 6 FPS improvement for ~12%.
 
+### Quaternions Everywhere
+
+Rajawali has been converted to use quaternions internally for all orientation/rotation. This should provide a more predictable, consistant
+and glitch free experience. This change has caused a few behavioral changes which are documented in the API and a few things you may have done
+with previous code will now throw exceptions with a clear message explaining how you should accomplish the desired effect. Some of these changes
+were necessary to ensure that the behavior remained consistent. Some of the more noteworthy changes:
+
+	- `ATransformable3D#setLookAt(Vector3)` now throws an exception if you try setting the target to null. Instead, a new method has been added,
+	`ATransformable3D#clearLookAt(boolean)`. The boolean parameter specifies whether or not the current orientation should be preserved, or if the
+	orientation should be reset to its as loaded (identity Quaternion) state.
+	- The various methods used to translate an `ATransformable3D` object have been extended to automatically cause an object to reorient to its look at target.
+	They use whatever the objects current `mUpAxis` value is. This value defaults to the +Y axis but can be changed at any time. This behavior is on by default
+	and can optionally be disabled by calling `ATransformable3D#disableLookA()`. You can turn it back on at any time by calling `ATransformable3D#enableLookAt()`.
+	- Various `rotate()` methods have been added to both the `Quaternion` class and the `ATransformable3D` class, making it easy to apply rotations to objects.
+	Note that if a look at target has been set for an object, calling any method which alters the rotation of an object, either by appending or directly setting
+	will stop any subsequent enforcement of the look at target.
+	- If look at tracking has been stopped via a direct rotation, it can be re-enabled by calling `ATransformable3D#resetToLookAt()` or `ATransformable3D#resetToLookAt(Vector3)`.
+	The former will orient to the look at, assuming the positive Y axis for up. The later takes a `Vector3` parameter for the up axis.
+
 # Scenes
 
 A new class, `RajawaliScene` has been added which fully encompasses everything to render a scene. Essentially everything you

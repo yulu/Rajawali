@@ -34,7 +34,6 @@ public class Camera extends ATransformable3D {
 	protected double mFieldOfView = 45.0;
 	protected int mLastWidth;
 	protected int mLastHeight;
-	protected final Vector3 mUpAxis;
 	protected boolean mUseRotationMatrix = false;
 	public Frustum mFrustum;
 	
@@ -55,7 +54,6 @@ public class Camera extends ATransformable3D {
 	public Camera() {
 		super();
 		mLocalOrientation = Quaternion.getIdentity();
-		mUpAxis = new Vector3(0, 1, 0);
 		mIsCamera = true;
 		mFrustum = new Frustum();
 	}
@@ -65,13 +63,8 @@ public class Camera extends ATransformable3D {
 			if (mLookAt != null) {
 				mVMatrix.setToLookAt(mPosition, mLookAt, mUpAxis);
 				mLocalOrientation.setAll(mOrientation);
-				//mLocalOrientation.fromEuler(mRotation.y, mRotation.z, mRotation.x);
 				mVMatrix.rotate(mLocalOrientation);
 			} else {
-				/*if (mUseRotationMatrix == false) {// && mRotationDirty) {
-					setOrientation();
-					mRotationDirty = false;
-				}*/
 				if (mUseRotationMatrix == false) {
 					mOrientation.toRotationMatrix(mVMatrix);
 				} else {
@@ -119,22 +112,28 @@ public class Camera extends ATransformable3D {
 		}		
 	}
 
-    public void setUpAxis(double x, double y, double z) {
+	@Override
+    public ATransformable3D setUpAxis(double x, double y, double z) {
     	synchronized (mFrustumLock) {
     		mUpAxis.setAll(x, y, z);
     	}
+    	return this;
     }
     
-    public void setUpAxis(Vector3 upAxis) {
+	@Override
+    public ATransformable3D setUpAxis(Vector3 upAxis) {
     	synchronized (mFrustumLock) {
     		mUpAxis.setAll(upAxis);
     	}
+    	return this;
     }
     
-    public void setUpAxis(Axis upAxis) {
+	@Override
+    public ATransformable3D setUpAxis(Axis upAxis) {
     	synchronized (mFrustumLock) {
     		mUpAxis.setAll(upAxis);
     	}
+    	return this;
     }
     
 	public Matrix4 getProjectionMatrix() {
