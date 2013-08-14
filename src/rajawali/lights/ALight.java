@@ -22,7 +22,7 @@ public abstract class ALight extends ATransformable3D {
 	public static final int SPOT_LIGHT = 2;
 
 	protected final float[] mColor = new float[] { 1.0f, 1.0f, 1.0f };
-	protected final double[] mPositionArray = new double[3];
+	protected final float[] mPositionArray = new float[3]; //We keep this as a float because it is the last step before the shaders
 	protected final double[] mDirectionArray = new double[3];
 	protected float mPower = .5f;
 	private int mLightType;
@@ -78,15 +78,49 @@ public abstract class ALight extends ATransformable3D {
 		this.mLightType = lightType;
 	}
 
-	public double[] getPositionArray() {
-		mPositionArray[0] = mPosition.x;
-		mPositionArray[1] = mPosition.y;
-		mPositionArray[2] = mPosition.z;
+	public float[] getPositionArray() {
+		setPositionArray();
 		return mPositionArray;
+	}
+	
+	private void setPositionArray() {
+		mPositionArray[0] = (float) mPosition.x;
+		mPositionArray[1] = (float) mPosition.y;
+		mPositionArray[2] = (float) mPosition.z;
 	}
 	
 	@Override
 	public AFrameTask.TYPE getFrameTaskType() {
 		return AFrameTask.TYPE.LIGHT;
+	}
+	
+	@Override
+	public void setPosition(Vector3 position) {
+		super.setPosition(position);
+		setPositionArray();
+	}
+
+	@Override
+	public void setPosition(double x, double y, double z) {
+		super.setPosition(x, y, z);
+		setPositionArray();
+	}
+
+	@Override
+	public void setX(double x) {
+		super.setX(x);
+		setPositionArray();
+	}
+	
+	@Override
+	public void setY(double y) {
+		super.setY(y);
+		setPositionArray();
+	}
+	
+	@Override
+	public void setZ(double z) {
+		super.setZ(z); 
+		setPositionArray();
 	}
 }

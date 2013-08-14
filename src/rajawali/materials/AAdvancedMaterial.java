@@ -172,14 +172,12 @@ public abstract class AAdvancedMaterial extends AMaterial {
 			ALight light = mLights.get(i);
 			GLES20.glUniform3fv(muLightColorHandles[i], 1, light.getColor(), 0);
 			GLES20.glUniform1f(muLightPowerHandles[i], light.getPower());
-			GLES20.glUniform3fv(muLightPositionHandles[i], 1, ArrayUtils.convertDoublesToFloats(light.getPositionArray(), mTemp3Floats), 0);
+			GLES20.glUniform3fv(muLightPositionHandles[i], 1, light.getPositionArray(), 0);
 			if(light.getLightType() == ALight.DIRECTIONAL_LIGHT)
-				GLES20.glUniform3fv(muLightDirectionHandles[i], 1, 
-						ArrayUtils.convertDoublesToFloats(((DirectionalLight)light).getDirection(), mTemp3Floats), 0);
+				GLES20.glUniform3fv(muLightDirectionHandles[i], 1, ((DirectionalLight)light).getDirection(), 0);
 			else if(light.getLightType() == ALight.SPOT_LIGHT)
 			{
-				GLES20.glUniform3fv(muLightDirectionHandles[i], 1, 
-						ArrayUtils.convertDoublesToFloats(((SpotLight)light).getDirection(), mTemp3Floats), 0);
+				GLES20.glUniform3fv(muLightDirectionHandles[i], 1, ((SpotLight)light).getDirection(), 0);
 				GLES20.glUniform4fv(muLightAttenuationHandles[i], 1, ((SpotLight)light).getAttenuation(), 0);
 				GLES20.glUniform1f(muSpotCutoffAngleHandles[i], ((SpotLight)light).getCutoffAngle());
 				GLES20.glUniform1f(muSpotFalloffHandles[i], ((SpotLight)light).getFalloff());
