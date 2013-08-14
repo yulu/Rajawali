@@ -60,7 +60,10 @@ public class Camera extends ATransformable3D {
 
 	public Matrix4 getViewMatrix() {
 		synchronized (mFrustumLock) {
-			if (mLookAt != null) {
+			mVMatrix.setAll(mTmpOrientation.setAll(mOrientation).multiply(mLocalOrientation));
+			mVMatrix.negTranslate(mPosition);
+			
+			/*if (mLookAt != null) {
 				mVMatrix.setToLookAt(mPosition, mLookAt, mUpAxis);
 				mLocalOrientation.setAll(mOrientation);
 				mVMatrix.rotate(mLocalOrientation);
@@ -71,7 +74,7 @@ public class Camera extends ATransformable3D {
 					mVMatrix.setAll(mRotationMatrix);
 				}
 				mVMatrix.negTranslate(mPosition);
-			}
+			}*/
 			return mVMatrix;
 		}
 	}

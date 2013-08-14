@@ -276,12 +276,12 @@ public class Matrix {
         final double det =
                 src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3;
 
-        if (det == 0.0f) {
+        if (det == 0.0) {
             return false;
         }
 
         // calculate matrix inverse
-        final double invdet = 1.0f / det;
+        final double invdet = 1.0 / det;
         mInv[     mInvOffset] = dst0  * invdet;
         mInv[ 1 + mInvOffset] = dst1  * invdet;
         mInv[ 2 + mInvOffset] = dst2  * invdet;
@@ -330,12 +330,12 @@ public class Matrix {
             throw new IllegalArgumentException("near == far");
         }
 
-        final double r_width  = 1.0f / (right - left);
-        final double r_height = 1.0f / (top - bottom);
-        final double r_depth  = 1.0f / (far - near);
-        final double x =  2.0f * (r_width);
-        final double y =  2.0f * (r_height);
-        final double z = -2.0f * (r_depth);
+        final double r_width  = 1.0 / (right - left);
+        final double r_height = 1.0 / (top - bottom);
+        final double r_depth  = 1.0 / (far - near);
+        final double x =  2.0 * (r_width);
+        final double y =  2.0 * (r_height);
+        final double z = -2.0 * (r_depth);
         final double tx = -(right + left) * r_width;
         final double ty = -(top + bottom) * r_height;
         final double tz = -(far + near) * r_depth;
@@ -345,16 +345,16 @@ public class Matrix {
         m[mOffset +12] = tx;
         m[mOffset +13] = ty;
         m[mOffset +14] = tz;
-        m[mOffset +15] = 1.0f;
-        m[mOffset + 1] = 0.0f;
-        m[mOffset + 2] = 0.0f;
-        m[mOffset + 3] = 0.0f;
-        m[mOffset + 4] = 0.0f;
-        m[mOffset + 6] = 0.0f;
-        m[mOffset + 7] = 0.0f;
-        m[mOffset + 8] = 0.0f;
-        m[mOffset + 9] = 0.0f;
-        m[mOffset + 11] = 0.0f;
+        m[mOffset +15] = 1.0;
+        m[mOffset + 1] = 0.0;
+        m[mOffset + 2] = 0.0;
+        m[mOffset + 3] = 0.0;
+        m[mOffset + 4] = 0.0;
+        m[mOffset + 6] = 0.0;
+        m[mOffset + 7] = 0.0;
+        m[mOffset + 8] = 0.0;
+        m[mOffset + 9] = 0.0;
+        m[mOffset + 11] = 0.0;
     }
 
 
@@ -474,7 +474,7 @@ public class Matrix {
             sm[smOffset + i] = 0;
         }
         for(int i = 0; i < 16; i += 5) {
-            sm[smOffset + i] = 1.0f;
+            sm[smOffset + i] = 1.0;
         }
     }
 
@@ -617,7 +617,7 @@ public class Matrix {
         rm[rmOffset + 13]= 0;
         rm[rmOffset + 14]= 0;
         rm[rmOffset + 15]= 1;
-        a *= Math.PI / 180.0f;
+        a *= Math.PI / 180.0;
         double s = Math.sin(a);
         double c = Math.cos(a);
         if (1.0f == x && 0.0f == y && 0.0f == z) {
@@ -640,13 +640,13 @@ public class Matrix {
             rm[rmOffset + 10]= 1;
         } else {
             double len = length(x, y, z);
-            if (1.0f != len) {
-                double recipLen = 1.0f / len;
+            if (1.0 != len) {
+                double recipLen = 1.0 / len;
                 x *= recipLen;
                 y *= recipLen;
                 z *= recipLen;
             }
-            double nc = 1.0f - c;
+            double nc = 1.0 - c;
             double xy = x * y;
             double yz = y * z;
             double zx = z * x;
@@ -675,9 +675,9 @@ public class Matrix {
      */
     public static void setRotateEulerM(double[] rm, int rmOffset,
             double x, double y, double z) {
-        x *= Math.PI / 180.0f;
-        y *= Math.PI / 180.0f;
-        z *= Math.PI / 180.0f;
+        x *= Math.PI / 180.0;
+        y *= Math.PI / 180.0;
+        z *= Math.PI / 180.0;
         double cx = Math.cos(x);
         double sx = Math.sin(x);
         double cy = Math.cos(y);
@@ -690,22 +690,22 @@ public class Matrix {
         rm[rmOffset + 0]  =   cy * cz;
         rm[rmOffset + 1]  =  -cy * sz;
         rm[rmOffset + 2]  =   sy;
-        rm[rmOffset + 3]  =  0.0f;
+        rm[rmOffset + 3]  =  0.0;
 
         rm[rmOffset + 4]  =  cxsy * cz + cx * sz;
         rm[rmOffset + 5]  = -cxsy * sz + cx * cz;
         rm[rmOffset + 6]  =  -sx * cy;
-        rm[rmOffset + 7]  =  0.0f;
+        rm[rmOffset + 7]  =  0.0;
 
         rm[rmOffset + 8]  = -sxsy * cz + sx * sz;
         rm[rmOffset + 9]  =  sxsy * sz + sx * cz;
         rm[rmOffset + 10] =  cx * cy;
-        rm[rmOffset + 11] =  0.0f;
+        rm[rmOffset + 11] =  0.0;
 
-        rm[rmOffset + 12] =  0.0f;
-        rm[rmOffset + 13] =  0.0f;
-        rm[rmOffset + 14] =  0.0f;
-        rm[rmOffset + 15] =  1.0f;
+        rm[rmOffset + 12] =  0.0;
+        rm[rmOffset + 13] =  0.0;
+        rm[rmOffset + 14] =  0.0;
+        rm[rmOffset + 15] =  1.0;
     }
 
     /**
@@ -737,7 +737,7 @@ public class Matrix {
         double fz = centerZ - eyeZ;
 
         // Normalize f
-        double rlf = 1.0f / Matrix.length(fx, fy, fz);
+        double rlf = 1.0 / Matrix.length(fx, fy, fz);
         fx *= rlf;
         fy *= rlf;
         fz *= rlf;
@@ -748,7 +748,7 @@ public class Matrix {
         double sz = fx * upY - fy * upX;
 
         // and normalize s
-        double rls = 1.0f / Matrix.length(sx, sy, sz);
+        double rls = 1.0 / Matrix.length(sx, sy, sz);
         sx *= rls;
         sy *= rls;
         sz *= rls;
@@ -761,22 +761,22 @@ public class Matrix {
         rm[rmOffset + 0] = sx;
         rm[rmOffset + 1] = ux;
         rm[rmOffset + 2] = -fx;
-        rm[rmOffset + 3] = 0.0f;
+        rm[rmOffset + 3] = 0.0;
 
         rm[rmOffset + 4] = sy;
         rm[rmOffset + 5] = uy;
         rm[rmOffset + 6] = -fy;
-        rm[rmOffset + 7] = 0.0f;
+        rm[rmOffset + 7] = 0.0;
 
         rm[rmOffset + 8] = sz;
         rm[rmOffset + 9] = uz;
         rm[rmOffset + 10] = -fz;
-        rm[rmOffset + 11] = 0.0f;
+        rm[rmOffset + 11] = 0.0;
 
-        rm[rmOffset + 12] = 0.0f;
-        rm[rmOffset + 13] = 0.0f;
-        rm[rmOffset + 14] = 0.0f;
-        rm[rmOffset + 15] = 1.0f;
+        rm[rmOffset + 12] = 0.0;
+        rm[rmOffset + 13] = 0.0;
+        rm[rmOffset + 14] = 0.0;
+        rm[rmOffset + 15] = 1.0;
 
         translateM(rm, rmOffset, -eyeX, -eyeY, -eyeZ);
     }

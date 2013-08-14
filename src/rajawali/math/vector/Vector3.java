@@ -287,6 +287,7 @@ public class Vector3 {
 
 	/**
 	 * Subtracts two input {@link Vector3} objects and sets this one to the result.
+	 * The result is defined as A - B.
 	 * 
 	 * @param a {@link Vector3} The first vector.
 	 * @param b {@link Vector3} The second vector.
@@ -301,6 +302,7 @@ public class Vector3 {
 	
 	/**
 	 * Subtracts two input {@link Vector3} objects and creates a new one to hold the result.
+	 * The result is defined as A - B.
 	 * 
 	 * @param a {@link Vector3} The first vector.
 	 * @param b {@link Vector3} The second vector

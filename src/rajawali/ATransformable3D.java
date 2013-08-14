@@ -40,6 +40,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	protected final Vector3 mScale; //The scale
 	protected final Quaternion mOrientation; //The orientation
 	protected final Quaternion mTmpOrientation; //A scratch quaternion
+	protected final Vector3 mTempVec = new Vector3(); //Scratch vector
 	protected Vector3 mLookAt; //The look at target
 	protected boolean mLookAtValid = false; //Is the look at target up to date?
 	protected boolean mLookAtEnabled = true; //Should we auto enforce look at target?
@@ -76,7 +77,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	public void setPosition(Vector3 position) {
 		mPosition.setAll(position);
 		if (mLookAtEnabled && mLookAt != null && mLookAtValid) 
-			mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+			resetToLookAt();
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 
@@ -91,7 +92,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	public void setPosition(double x, double y, double z) {
 		mPosition.setAll(x, y, z);
 		if (mLookAtEnabled && mLookAt != null && mLookAtValid) 
-			mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+			resetToLookAt();
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 
@@ -104,7 +105,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	public void setX(double x) {
 		mPosition.x = x;
 		if (mLookAtEnabled && mLookAt != null && mLookAtValid) 
-			mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+			resetToLookAt();
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 	
@@ -117,7 +118,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	public void setY(double y) {
 		mPosition.y = y;
 		if (mLookAtEnabled && mLookAt != null && mLookAtValid) 
-			mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+			resetToLookAt();
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 	
@@ -130,7 +131,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	public void setZ(double z) {
 		mPosition.z = z;
 		if (mLookAtEnabled && mLookAt != null && mLookAtValid) 
-			mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+			resetToLookAt();
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 	}
 	
@@ -490,7 +491,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 		}
 		if (mLookAt == null) mLookAt = new Vector3();
 		mLookAt.setAll(lookAt);
-		mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+		resetToLookAt();
 		mLookAtValid = true;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 		return this;
@@ -508,7 +509,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 		mLookAt.x = x;
 		mLookAt.y = y;
 		mLookAt.z = z;
-		mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
+		resetToLookAt();
 		mLookAtValid = true;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 		return this;
@@ -575,13 +576,13 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 	
 	/**
 	 * Resets the orientation of this {@link ATransformable3D} object to look at its look at
-	 * target and use the cardinal Y axis as up. If this is part of a scene graph, the graph 
+	 * target and use the current up axis. If this is part of a scene graph, the graph 
 	 * will be notified of the change.
 	 * 
 	 * @return A reference to this {@link ATransformable3D} to facilitate chaining.
 	 */
 	public ATransformable3D resetToLookAt() {
-		resetToLookAt(Vector3.Y);
+		resetToLookAt(mUpAxis);
 		return this;
 	}
 	
@@ -597,7 +598,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 		if (mLookAt == null) {
 			mOrientation.identity();
 		} else {
-			mOrientation.lookAt(mLookAt, upAxis, mIsCamera);
+			mOrientation.lookAt(mTempVec.subtractAndSet(mPosition, mLookAt), upAxis, mIsCamera);
 		}
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 		return this;

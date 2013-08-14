@@ -110,7 +110,7 @@ were necessary to ensure that the behavior remained consistent. Some of the more
 	Note that if a look at target has been set for an object, calling any method which alters the rotation of an object, either by appending or directly setting
 	will stop any subsequent enforcement of the look at target.
 	- If look at tracking has been stopped via a direct rotation, it can be re-enabled by calling `ATransformable3D#resetToLookAt()` or `ATransformable3D#resetToLookAt(Vector3)`.
-	The former will orient to the look at, assuming the positive Y axis for up. The later takes a `Vector3` parameter for the up axis.
+	The former will orient to the look at, assuming the object's current up axis as up. The later takes a `Vector3` parameter for the up axis.
 
 # Scenes
 

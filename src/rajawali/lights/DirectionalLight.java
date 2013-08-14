@@ -33,6 +33,7 @@ public class DirectionalLight extends ALight {
 		setLookAt(x, y, z);
 		mDirectionVec.setAll(mForwardAxis);
 		mDirectionVec.setAll(mOrientation.multiply(mDirectionVec));
+		mDirectionVec.inverse();
 		mDirection[0] = (float) mDirectionVec.x;
 		mDirection[1] = (float) mDirectionVec.y;
 		mDirection[2] = (float) mDirectionVec.z;

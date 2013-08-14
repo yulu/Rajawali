@@ -1126,13 +1126,13 @@ public final class Quaternion {
 	 * Sets this {@link Quaternion} to be oriented to a target {@link Vector3}.
 	 * It is safe to use the input vectors for other things as they are cloned internally.
 	 * 
-	 * @param lookAt {@link Vector3} The point to look at.
+	 * @param lookVec {@link Vector3} The point to look at.
 	 * @param upDirection {@link Vector3} to use as the up direction.
 	 * @param isCamera boolean indicating if this orientation is for a camera.
 	 * @return A reference to this {@link Quaternion} to facilitate chaining.
 	 */
-	public Quaternion lookAt(Vector3 lookAt, Vector3 upDirection, boolean isCamera) {
-		Vector3 forward = lookAt.clone(); 
+	public Quaternion lookAt(Vector3 lookVec, Vector3 upDirection, boolean isCamera) {
+		Vector3 forward = lookVec.clone(); 
 		Vector3 up = upDirection.clone();
 		Vector3[] vecs = new Vector3[2];
 		vecs[0] = forward; 
@@ -1152,14 +1152,13 @@ public final class Quaternion {
 	 * Creates a new {@link Quaternion} which is oriented to a target {@link Vector3}.
 	 * It is safe to use the input vectors for other things as they are cloned internally.
 	 * 
-	 * @param lookAt {@link Vector3} The point to look at.
+	 * @param lookDir {@link Vector3} The point to look at.
 	 * @param upDirection {@link Vector3} to use as the up direction.
 	 * @param isCamera boolean indicating if this orientation is for a camera.
 	 * @return {@link Quaternion} The new {@link Quaternion} representing the requested orientation.
 	 */
-    public static Quaternion lookAtAndCreate(Vector3 lookAt, Vector3 upDirection, boolean isCamera) {
-		Quaternion ret = new Quaternion();
-		return ret.lookAt(lookAt, upDirection, isCamera);
+    public static Quaternion lookAtAndCreate(Vector3 lookDir, Vector3 upDirection, boolean isCamera) {
+		return new Quaternion().lookAt(lookDir, upDirection, isCamera);
 	}
     
     
