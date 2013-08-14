@@ -490,6 +490,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 		}
 		if (mLookAt == null) mLookAt = new Vector3();
 		mLookAt.setAll(lookAt);
+		mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
 		mLookAtValid = true;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 		return this;
@@ -507,6 +508,7 @@ public abstract class ATransformable3D extends AFrameTask implements IGraphNodeM
 		mLookAt.x = x;
 		mLookAt.y = y;
 		mLookAt.z = z;
+		mOrientation.lookAt(mLookAt, mUpAxis, mIsCamera);
 		mLookAtValid = true;
 		if (mGraphNode != null) mGraphNode.updateObject(this);
 		return this;

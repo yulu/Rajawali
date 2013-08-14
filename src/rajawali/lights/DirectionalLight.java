@@ -17,13 +17,11 @@ import rajawali.math.vector.Vector3.Axis;
 
 public class DirectionalLight extends ALight {
 	protected float[] mDirection = new float[3]; //We keep this as a float because it is the last step before the shaders
-	protected double[] mRotationMatrix = new double[16];
-	protected Vector3 mDirectionVec = new Vector3();
-	final protected Vector3 mForwardAxis = Vector3.getAxisVector(Axis.Z);
+	protected final Vector3 mDirectionVec = new Vector3();
+	protected final Vector3 mForwardAxis = Vector3.getAxisVector(Axis.Z);
 
 	public DirectionalLight() {
 		super(DIRECTIONAL_LIGHT);
-		setRotY(180);
 	}
 
 	public DirectionalLight(double xDir, double yDir, double zDir) {
