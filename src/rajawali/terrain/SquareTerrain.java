@@ -13,7 +13,7 @@
 package rajawali.terrain;
 
 import rajawali.ATransformable3D;
-import rajawali.materials.SimpleMaterial;
+import rajawali.materials.Material;
 import rajawali.math.Plane;
 import rajawali.math.vector.Vector3;
 import rajawali.primitives.Sphere;
@@ -264,8 +264,8 @@ public class SquareTerrain extends Terrain {
 			}
 
 		if (debug) {
-			SimpleMaterial mat = new SimpleMaterial();
-			mat.setUseSingleColor(true);
+			Material mat = new Material();
+			// TODO mat.useSingleColor(true);
 			mV0 = new Sphere(0.2f, 8, 8);
 			mV1 = new Sphere(0.2f, 8, 8);
 			mV2 = new Sphere(0.2f, 8, 8);

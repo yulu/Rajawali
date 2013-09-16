@@ -26,7 +26,9 @@ import rajawali.animation.mesh.SkeletalAnimationChildObject3D.BoneWeight;
 import rajawali.animation.mesh.SkeletalAnimationFrame.SkeletonJoint;
 import rajawali.animation.mesh.SkeletalAnimationObject3D;
 import rajawali.animation.mesh.SkeletalAnimationObject3D.SkeletalAnimationException;
-import rajawali.materials.DiffuseMaterial;
+import rajawali.materials.Material;
+import rajawali.materials.methods.DiffuseMethod;
+import rajawali.materials.plugins.SkeletalAnimationMaterialPlugin;
 import rajawali.materials.textures.ATexture.TextureException;
 import rajawali.materials.textures.Texture;
 import rajawali.materials.textures.TextureManager;
@@ -173,7 +175,6 @@ public class LoaderMD5Mesh extends AMeshLoader implements IAnimatedMeshLoader {
 				offset = line.indexOf(')');
 				String[] p = line.substring(line.indexOf('(') + 2, offset).split(" ");
 				joint.setPosition(Float.parseFloat(p[0]), Float.parseFloat(p[2]), Float.parseFloat(p[1]));
-
 				// -- orientation
 				p = line.substring(line.indexOf('(', offset) + 2, line.lastIndexOf(')')).split(" ");
 				joint.setOrientation(Float.parseFloat(p[0]), Float.parseFloat(p[2]), Float.parseFloat(p[1]));
@@ -325,8 +326,8 @@ public class LoaderMD5Mesh extends AMeshLoader implements IAnimatedMeshLoader {
 			for (int j = 0; j < numTriangles; ++j) {
 				int[] triangle = mesh.triangles[j];
 				int index0 = triangle[0];
-				int index1 = triangle[1];
-				int index2 = triangle[2];
+				int index1 = triangle[2];
+				int index2 = triangle[1];
 
 				mesh.indices[index++] = index0;
 				mesh.indices[index++] = index1;
@@ -341,6 +342,7 @@ public class LoaderMD5Mesh extends AMeshLoader implements IAnimatedMeshLoader {
 				Vector3 v2 = new Vector3(mesh.vertices[index23], mesh.vertices[index23 + 1], mesh.vertices[index23 + 2]);
 
 				Vector3 normal = Vector3.crossAndCreate(Vector3.subtractAndCreate(v2, v0), Vector3.subtractAndCreate(v1, v0));
+				normal.inverse();
 
 				mesh.boneVertices[index0].normal.add(normal);
 				mesh.boneVertices[index1].normal.add(normal);
@@ -427,16 +429,16 @@ public class LoaderMD5Mesh extends AMeshLoader implements IAnimatedMeshLoader {
 			o.setSkeletonMeshData(mesh.numVertices, mesh.boneVertices, mesh.numWeights, mesh.boneWeights);
 			o.setName("MD5Mesh_" + i);
 			o.setSkeleton(mRootObject);
+			o.setInverseZScale(true);
 
 			boolean hasTexture = mesh.textureName != null && mesh.textureName.length() > 0;
 
-			DiffuseMaterial mat = new DiffuseMaterial();
-			mat.setSkeletalAnimationEnabled(true);
-			mat.setNumJoints(mNumJoints);
-			mat.setMaxWeights(mesh.maxBoneWeightsPerVertex);
+			Material mat = new Material();
+			mat.addPlugin(new SkeletalAnimationMaterialPlugin(mNumJoints, mesh.maxBoneWeightsPerVertex));
+			mat.enableLighting(true);
+			mat.setDiffuseMethod(new DiffuseMethod.Lambert());
 			o.setMaterial(mat);
 			if (!hasTexture) {
-				mat.setUseSingleColor(!hasTexture);
 				o.setColor(0xff000000 + (int) (Math.random() * 0xffffff));
 			} else {
 				int identifier = mResources.getIdentifier(mesh.textureName, "drawable",
@@ -444,9 +446,8 @@ public class LoaderMD5Mesh extends AMeshLoader implements IAnimatedMeshLoader {
 				if (identifier == 0) {
 					throw new ParsingException("Couldn't find texture " + mesh.textureName);
 				}
-				mat.addTexture(new Texture(identifier));
+				mat.addTexture(new Texture("md5tex" + i, identifier));
 			}
-
 			mRootObject.addChild(o);
 			
 			mesh.destroy();
