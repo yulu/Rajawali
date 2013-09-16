@@ -313,7 +313,7 @@ public class SkeletalAnimationObject3D extends AAnimationObject3D {
 	
 	public SkeletalAnimationObject3D clone(boolean copyMaterial) {
 		SkeletalAnimationObject3D clone = new SkeletalAnimationObject3D();
-		clone.setRotation(getRotation());
+		clone.setRotation(mOrientation);
 		clone.setScale(getScale());
 		clone.getGeometry().copyFromGeometry3D(mGeometry);
 		clone.isContainer(mIsContainerOnly);
