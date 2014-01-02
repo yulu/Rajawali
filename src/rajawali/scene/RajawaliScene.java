@@ -42,6 +42,7 @@ import rajawali.scenegraph.IGraphNode;
 import rajawali.scenegraph.IGraphNode.GRAPH_TYPE;
 import rajawali.scenegraph.IGraphNodeMember;
 import rajawali.scenegraph.Octree;
+import rajawali.util.ObjectColorPicker;
 import rajawali.util.ObjectColorPicker.ColorPickerInfo;
 import rajawali.util.ObjectColorPicker.ObjectColorPickerException;
 import android.graphics.Color;
@@ -362,6 +363,10 @@ public class RajawaliScene extends AFrameTask {
 		return queueAddTask(child);
 	}
 	
+	public boolean addChildAt(Object3D child, int index) {
+		return queueAddTask(child, index);
+	}
+	
 	/**
 	 * Requests the addition of a {@link Collection} of children to the scene.
 	 * 
@@ -523,6 +528,7 @@ public class RajawaliScene extends AFrameTask {
 			mNextSkybox.setDoubleSided(true);
 			mSkyboxTexture = new Texture("skybox", resourceId);
 			Material material = new Material();
+			material.setColorInfluence(0);
 			material.addTexture(mSkyboxTexture);
 			mNextSkybox.setMaterial(material);
 		}
@@ -551,6 +557,7 @@ public class RajawaliScene extends AFrameTask {
 			mSkyboxTexture = new CubeMapTexture("skybox", resourceIds);
 			((CubeMapTexture)mSkyboxTexture).isSkyTexture(true);
 			Material mat = new Material();
+			mat.setColorInfluence(0);
 			mat.addTexture(mSkyboxTexture);
 			mNextSkybox.setMaterial(mat);
 		}
@@ -655,15 +662,19 @@ public class RajawaliScene extends AFrameTask {
 			if (mNextCamera != null) {
 				mCamera = mNextCamera;
 				mNextCamera = null;
-				mCamera.setProjectionMatrix(mRenderer.getViewportWidth(), mRenderer.getViewportHeight());
+				mCamera.setProjectionMatrix(mRenderer.getCurrentViewportWidth(), mRenderer.getCurrentViewportHeight());
 			}
 		}
 		
 		int clearMask = mAlwaysClearColorBuffer? GLES20.GL_COLOR_BUFFER_BIT : 0;
 
 		ColorPickerInfo pickerInfo = mPickerInfo;
-
-		if (pickerInfo != null) {
+		
+		if(renderTarget != null)
+		{
+			renderTarget.bind();
+			GLES20.glClearColor(mRed, mGreen, mBlue, mAlpha);
+		} else if (pickerInfo != null) {
 			if(mReloadPickerInfo) pickerInfo.getPicker().reload();
 			mReloadPickerInfo = false;
 			try {
@@ -734,7 +745,7 @@ public class RajawaliScene extends AFrameTask {
         }
 		
 		if (pickerInfo != null) {
-			pickerInfo.getPicker().createColorPickingTexture(pickerInfo);
+			ObjectColorPicker.createColorPickingTexture(pickerInfo);
 			pickerInfo.getPicker().unbindFrameBuffer();
 			pickerInfo = null;
 			mPickerInfo = null;
@@ -744,6 +755,11 @@ public class RajawaliScene extends AFrameTask {
 		synchronized (mPlugins) {
 			for (int i = 0, j = mPlugins.size(); i < j; i++)
 				mPlugins.get(i).render();
+		}
+		
+		if(renderTarget != null)
+		{
+			renderTarget.unbind();
 		}
 	}
 	

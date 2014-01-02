@@ -333,6 +333,14 @@ public class SquareTerrain extends Terrain {
 	public double getMaxAltitude() {
 		return mMaxH;
 	}
+	
+	/**
+     	 * Retrive the Terrain Heights Matrix
+     	 * 
+     	 */
+    	public double[][] getHeights(){
+        	return mTerrain;
+    	}
 
 	/**
 	 * the minimum Temperature
