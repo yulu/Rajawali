@@ -14,7 +14,6 @@ package rajawali.materials.shaders.fragments.texture;
 
 import java.util.List;
 
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.textures.ATexture;
 
 
@@ -47,10 +46,5 @@ public class NormalMapFragmentShaderFragment extends ATextureFragmentShaderFragm
 			
 			normal.assign(normalize(texNormal.add(normal)));
 		}
-	}
-	
-	@Override
-	public PluginInsertLocation getInsertLocation() {
-		return PluginInsertLocation.IGNORE;
 	}
 }

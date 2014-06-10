@@ -23,7 +23,7 @@ import android.view.Surface;
 
 public class VideoTexture extends ATexture {
 
-	private final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
+	private final int GL_TEXTURE_EXTERNAL_OES = GLES11Ext.GL_TEXTURE_EXTERNAL_OES;
 	private MediaPlayer mMediaPlayer;
 	private Camera mCamera;
 	private SurfaceTexture mSurfaceTexture;

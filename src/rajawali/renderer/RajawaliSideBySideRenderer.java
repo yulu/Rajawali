@@ -182,9 +182,7 @@ public class RajawaliSideBySideRenderer extends RajawaliRenderer {
 		setPupilDistance(mPupilDistance);
 
 		mLeftQuadMaterial = new Material();
-		mLeftQuadMaterial.setColorInfluence(0);
 		mRightQuadMaterial = new Material();
-		mRightQuadMaterial.setColorInfluence(0);
 
 		mSideBySideScene = new RajawaliScene(this);
 
@@ -204,8 +202,8 @@ public class RajawaliSideBySideRenderer extends RajawaliRenderer {
 
 		mViewportWidthHalf = (int) (mViewportWidth * .5f);
 
-		mLeftRenderTarget = new RenderTarget("sbsLeftRT", mViewportWidthHalf, mViewportHeight);
-		mRightRenderTarget = new RenderTarget("sbsRightRT", mViewportWidthHalf, mViewportHeight);
+		mLeftRenderTarget = new RenderTarget(mViewportWidthHalf, mViewportHeight);
+		mRightRenderTarget = new RenderTarget(mViewportWidthHalf, mViewportHeight);
 
 		addRenderTarget(mLeftRenderTarget);
 		addRenderTarget(mRightRenderTarget);

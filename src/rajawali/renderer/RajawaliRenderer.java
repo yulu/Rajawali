@@ -30,12 +30,15 @@ import javax.microedition.khronos.opengles.GL10;
 
 import rajawali.Camera;
 import rajawali.Capabilities;
+import rajawali.Object3D;
+import rajawali.animation.Animation3D;
 import rajawali.materials.Material;
 import rajawali.materials.MaterialManager;
 import rajawali.materials.textures.ATexture;
 import rajawali.materials.textures.TextureManager;
 import rajawali.math.Matrix;
 import rajawali.math.vector.Vector3;
+import rajawali.renderer.plugins.Plugin;
 import rajawali.scene.RajawaliScene;
 import rajawali.util.GLU;
 import rajawali.util.ObjectColorPicker;
@@ -315,6 +318,28 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 	}
 	
 	/**
+	 * Register an animation to be managed by the current scene. This is optional 
+	 * leaving open the possibility to manage updates on Animations in your own implementation.
+	 * 
+	 * @param anim {@link Animation3D} to be registered.
+	 * @return boolean True if the registration was queued successfully.
+	 */
+	public boolean registerAnimation(Animation3D anim) {
+		return mCurrentScene.registerAnimation(anim);
+	}
+	
+	/**
+	 * Remove a managed animation. If the animation is not a member of the current scene, 
+	 * nothing will happen.
+	 * 
+	 * @param anim {@link Animation3D} to be unregistered.
+	 * @return boolean True if the unregister was queued successfully.
+	 */
+	public boolean unregisterAnimation(Animation3D anim) {
+		return mCurrentScene.unregisterAnimation(anim);
+	}
+	
+	/**
 	 * Add a render target in a thread safe manner.
 	 * 
 	 * @param renderTarget 
@@ -342,6 +367,103 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 	 */
 	public Camera getCurrentCamera() {
 		return mCurrentScene.getCamera();
+	}
+	
+	/**
+	 * Adds a {@link Camera} to the current scene. 
+	 * 
+	 * @param camera {@link Camera} to add.
+	 * @return boolean True if the addition was queued successfully.
+	 */
+	public boolean addCamera(Camera camera) {
+		return mCurrentScene.addCamera(camera);
+	}
+	
+	/**
+	 * Replace a {@link Camera} in the current scene with a new one, switching immediately.
+	 * 
+	 * @param oldCamera {@link Camera} the old camera.
+	 * @param newCamera {@link Camera} the new camera.
+	 * @return boolean True if the replacement was queued successfully.
+	 */
+	public boolean replaceAndSwitchCamera(Camera oldCamera, Camera newCamera) {
+		return mCurrentScene.replaceAndSwitchCamera(oldCamera, newCamera);
+	}
+	
+	/**
+	 * Replace a {@link Camera} at the specified index in the current scene with a new one, 
+	 * switching immediately.
+	 * 
+	 * @param camera {@link Camera} the new camera.
+	 * @param index The integer index of the camera to replace.
+	 * @return boolean True if the replacement was queued successfully.
+	 */
+	public boolean replaceAndSwitchCamera(Camera camera, int index) {
+		return mCurrentScene.replaceAndSwitchCamera(camera, index);
+	}
+	
+	/**
+	 * Adds a {@link Camera} to the current scene switching
+	 * to it immediately.
+	 * 
+	 * @param camera {@link Camera} to add.
+	 * @return boolean True if the addition was queued successfully.
+	 */
+	public boolean addAndSwitchCamera(Camera camera) {
+		return mCurrentScene.addAndSwitchCamera(camera);
+	}
+	
+	/**
+	 * Removes a {@link Camera} from the current scene.
+	 * If the camera is not a member of the scene, nothing will happen.
+	 * 
+	 * @param camera {@link Camera} to remove.
+	 * @return boolean True if the removal was queued successfully.
+	 */
+	public boolean removeCamera(Camera camera) {
+		return mCurrentScene.removeCamera(camera);
+	}
+	
+	/**
+	 * Adds a {@link Object3D} child to the current scene.
+	 * 
+	 * @param child {@link Object3D} object to be added.
+	 * @return boolean True if the addition was successfully queued.
+	 */
+	public boolean addChild(Object3D child) {
+		return mCurrentScene.addChild(child);
+	}
+	
+	/**
+	 * Removes a {@link Object3D} child from the current scene.
+	 * If the child is not a member of the scene, nothing will happen.
+	 * 
+	 * @param child {@link Object3D} object to be removed.
+	 * @return boolean True if the removal was successfully queued.
+	 */
+	public boolean removeChild(Object3D child) {
+		return mCurrentScene.removeChild(child);
+	}
+	
+	/**
+	 * Adds a {@link Plugin} plugin to the current scene.
+	 * 
+	 * @param plugin {@link Plugin} object to be added.
+	 * @return boolean True if the addition was successfully queued.
+	 */
+	public boolean addPlugin(Plugin plugin) {
+		return mCurrentScene.addPlugin(plugin);
+	}
+	
+	/**
+	 * Removes a {@link Plugin} child from the current scene.
+	 * If the plugin is not a member of the scene, nothing will happen.
+	 * 
+	 * @param plugin {@link Plugin} object to be removed.
+	 * @return boolean True if the removal was successfully queued.
+	 */
+	public boolean removePlugin(Plugin plugin) {
+		return mCurrentScene.removePlugin(plugin);
 	}
 	
 	/*
@@ -391,7 +513,8 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 		}
 	}
 	
-	protected void onRender(final double deltaTime) {
+	protected void onRender(final double deltaTime)
+	{
 		render(deltaTime);
 	}
 
@@ -399,6 +522,7 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 	 * Called by {@link #onDrawFrame(GL10)} to render the next frame.
 	 */
 	protected void render(final double deltaTime) {
+		
 		mCurrentScene.render(deltaTime, mCurrentRenderTarget);
 	}
 
@@ -439,7 +563,7 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 		mSceneInitialized = true;
 		startRendering();
 		
-		setViewPort(mViewportWidth, mViewportHeight);
+		setViewPort(width, height);
 	}
 	
 	protected void setViewPort(int width, int height)
@@ -463,19 +587,18 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 		Capabilities.getInstance();
 		
 		String[] versionString = (gl.glGetString(GL10.GL_VERSION)).split(" ");
-		RajLog.d("Open GL ES Version String: " + gl.glGetString(GL10.GL_VERSION));
 		if (versionString.length >= 3) {
 			String[] versionParts = versionString[2].split("\\.");
 			if (versionParts.length >= 2) {
 				mGLES_Major_Version = Integer.parseInt(versionParts[0]);
-				if (versionParts[1].endsWith(":") || versionParts[1].endsWith("-")) {
-					versionParts[1] = versionParts[1].substring(0, versionParts[1].length() - 1);
-				}
 				mGLES_Minor_Version = Integer.parseInt(versionParts[1]);
 			}
 		}
 		
 		supportsUIntBuffers = gl.glGetString(GL10.GL_EXTENSIONS).indexOf("GL_OES_element_index_uint") > -1;
+
+		//GLES20.glFrontFace(GLES20.GL_CCW);
+		//GLES20.glCullFace(GLES20.GL_BACK);
 	}
 	
 	/**
@@ -1206,6 +1329,22 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 	
 	public int getCurrentViewportHeight() {
 		return mCurrentViewportHeight;
+	}
+	
+	public static boolean isFogEnabled() {
+		return mFogEnabled;
+	}
+	
+	public void setFogEnabled(boolean enabled) {
+		mFogEnabled = enabled;
+		synchronized (mScenes) {
+			for (int i = 0, j = mScenes.size(); i < j; ++i) {
+				List<Camera> cams = mScenes.get(i).getCamerasCopy();
+				for (int n = 0, k = cams.size(); n < k; ++n) {
+					cams.get(n).setFogEnabled(enabled);
+				}
+			}
+		}
 	}
 	
 	public boolean getSceneInitialized() {

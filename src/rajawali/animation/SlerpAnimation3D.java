@@ -35,15 +35,14 @@ import rajawali.math.vector.Vector3.Axis;
  *
  */
 public class SlerpAnimation3D extends Animation3D {
-	
-	protected final Quaternion mFrom;
-	protected final Quaternion mTo;
-	protected final Vector3 mForwardVec = Vector3.getAxisVector(Axis.Z);
-	protected final Vector3 mTmpVec;
-	protected final Vector3 mTmpQuatVector;
-	protected final Quaternion mTmpQuat;
-	protected final double[] mRotationMatrix;
-	protected final double mDistance;
+	private Quaternion mFrom;
+	private Quaternion mTo;
+	private final Vector3 mForwardVec = Vector3.getAxisVector(Axis.Z);
+	private Vector3 mTmpVec;
+	private Vector3 mTmpQuatVector;
+	private Quaternion mTmpQuat;
+	private double[] mRotationMatrix;
+	private double mDistance;
 	
 	public SlerpAnimation3D(Vector3 from, Vector3 to) {
 		super();
@@ -66,10 +65,10 @@ public class SlerpAnimation3D extends Animation3D {
 		mTransformable3D.setPosition(mTmpVec);
 	}
 	
-	protected Quaternion quaternionFromVector(Vector3 vec) {
+	private Quaternion quaternionFromVector(Vector3 vec) {
 		vec.normalize();
-		final double angle = MathUtil.radiansToDegrees(Math.acos(Vector3.dot(mForwardVec, vec)));
-		final Quaternion q = new Quaternion();
+		double angle = MathUtil.radiansToDegrees(Math.acos(Vector3.dot(mForwardVec, vec)));
+		Quaternion q = new Quaternion();
 		q.fromAngleAxis(mTmpQuatVector.crossAndSet(mForwardVec, vec), angle);
 		return q;
 	}

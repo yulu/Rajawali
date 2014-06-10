@@ -14,7 +14,6 @@ package rajawali.materials.shaders.fragments.texture;
 
 import java.util.List;
 
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.textures.ATexture;
 
 
@@ -45,10 +44,5 @@ public class AlphaMapFragmentShaderFragment extends ATextureFragmentShaderFragme
 			}
 			endif();
 		}
-	}
-	
-	@Override
-	public PluginInsertLocation getInsertLocation() {
-		return PluginInsertLocation.IGNORE;
 	}
 }

@@ -15,8 +15,9 @@ package rajawali.renderer;
 import rajawali.materials.textures.ATexture.FilterType;
 import rajawali.materials.textures.ATexture.WrapType;
 import rajawali.materials.textures.RenderTargetTexture;
+import rajawali.materials.textures.RenderTargetTexture.RenderTargetTextureFormat;
+import rajawali.materials.textures.RenderTargetTexture.RenderTargetTextureType;
 import rajawali.materials.textures.TextureManager;
-import rajawali.util.RajLog;
 import android.graphics.Bitmap.Config;
 import android.opengl.GLES20;
 import android.opengl.GLU;
@@ -40,6 +41,7 @@ public class RenderTarget extends AFrameTask {
 	protected FilterType mFilterType;
 	protected WrapType mWrapType;
 
+	protected boolean mDepthBuffer;
 	protected boolean mStencilBuffer;
 
 	protected int mFrameBufferHandle;
@@ -47,6 +49,45 @@ public class RenderTarget extends AFrameTask {
 	protected int mStencilBufferHandle;
 
 	protected RenderTargetTexture mTexture;
+	protected RenderTargetTexture mDepthTexture;
+	private static int count = 0;
+
+	/**
+	 * Instantiates a new RenderTarget object
+	 * 
+	 * @param name
+	 *            The name of the render target. This should be unique and should comply with regular variable naming
+	 *            standards.
+	 * @param width
+	 *            Width of the render target
+	 * @param height
+	 *            Height of the render target
+	 * @param offsetX
+	 *            Horizontal offset of the render target
+	 * @param offsetY
+	 *            Vertical offset of the render target
+	 * @param depthBuffer
+	 *            Set to true to enable depth buffer
+	 * @param stencilBuffer
+	 *            Set to true to enable stencil buffer
+	 * @param mipmaps
+	 *            Set to true to enable automatic mipmap generation
+	 * @param glType
+	 *            Datatype to use for the texture
+	 * @param bitmapConfig
+	 *            Bitmap configuration
+	 * @param filterType
+	 *            Texture filter type
+	 * @param wrapType
+	 *            Texture wrap type
+	 */
+	public RenderTarget(int width, int height, int offsetX, int offsetY,
+			boolean depthBuffer, boolean stencilBuffer, boolean mipmaps,
+			int glType, Config bitmapConfig, FilterType filterType,
+			WrapType wrapType) {
+		this("uRendTarg" + count++, width, height, offsetX, offsetY, depthBuffer, stencilBuffer,
+				mipmaps, glType, bitmapConfig, filterType, wrapType);
+	}
 
 	/**
 	 * Instantiates a new RenderTarget object
@@ -78,7 +119,7 @@ public class RenderTarget extends AFrameTask {
 	 *            Texture wrap type
 	 */
 	public RenderTarget(String name, int width, int height, int offsetX, int offsetY,
-			boolean stencilBuffer, boolean mipmaps,
+			boolean depthBuffer, boolean stencilBuffer, boolean mipmaps,
 			int glType, Config bitmapConfig, FilterType filterType,
 			WrapType wrapType) {
 		mName = name;
@@ -86,6 +127,7 @@ public class RenderTarget extends AFrameTask {
 		mHeight = height;
 		mOffsetX = offsetX;
 		mOffsetY = offsetY;
+		mDepthBuffer = depthBuffer;
 		mStencilBuffer = stencilBuffer;
 		mMipmaps = mipmaps;
 		mGLType = glType;
@@ -99,6 +141,19 @@ public class RenderTarget extends AFrameTask {
 		mTexture.setBitmapConfig(mBitmapConfig);
 		mTexture.setFilterType(mFilterType);
 		mTexture.setWrapType(mWrapType);
+
+		if (mDepthBuffer)
+		{
+			mDepthTexture = new RenderTargetTexture(mName + "FBDepth", mWidth, mHeight,
+					RenderTargetTextureFormat.DEPTH,
+					RenderTargetTextureFormat.DEPTH,
+					RenderTargetTextureType.UNSIGNED_BYTE);
+			mDepthTexture.setMipmap(false);
+			mDepthTexture.setGLTextureType(mGLType);
+			mDepthTexture.setBitmapConfig(mBitmapConfig);
+			mDepthTexture.setFilterType(mFilterType);
+			mDepthTexture.setWrapType(mWrapType);
+		}
 	}
 	
 
@@ -110,25 +165,44 @@ public class RenderTarget extends AFrameTask {
 	 * @param height
 	 *            Height of the render target
 	 */
-	public RenderTarget(String name, int width, int height) {
-		this(name, width, height, 0, 0, false, false, GLES20.GL_TEXTURE_2D, Config.ARGB_8888, FilterType.LINEAR,
+	public RenderTarget(int width, int height) {
+		this(width, height, 0, 0, false, false, false, GLES20.GL_TEXTURE_2D, Config.ARGB_8888, FilterType.LINEAR,
 				WrapType.CLAMP);
 	}
 
 	@Override
 	public RenderTarget clone() {
 		return new RenderTarget(
-				mName,
 				mWidth,
 				mHeight,
 				mOffsetX,
 				mOffsetY,
+				mDepthBuffer,
 				mStencilBuffer,
 				mTexture.isMipmap(),
 				mTexture.getGLTextureType(),
 				mTexture.getBitmapConfig(),
 				mTexture.getFilterType(),
 				mTexture.getWrapType());
+	}
+
+	/**
+	 * Returns whether depth buffer has been enabled for this render target.
+	 * 
+	 * @return True if depth buffer is enabled, false otherwise.
+	 */
+	public boolean isDepthBufferEnabled() {
+		return mDepthBuffer;
+	}
+
+	/**
+	 * Sets whether depth buffer is enabled.
+	 * 
+	 * @param depthBuffer
+	 *            Set to true to enable depth buffer.
+	 */
+	public void enableDepthBuffer(boolean depthBuffer) {
+		mDepthBuffer = depthBuffer;
 	}
 
 	/**
@@ -168,7 +242,6 @@ public class RenderTarget extends AFrameTask {
 	 */
 	public void setHeight(int height) {
 		mHeight = height;
-		mTexture.setHeight(height);
 	}
 
 	/**
@@ -227,11 +300,9 @@ public class RenderTarget extends AFrameTask {
 	 */
 	public void setWidth(int width) {
 		mWidth = width;
-		mTexture.setWidth(width);
 	}
 
 	public void create() {
-		RajLog.i("rendertarget create");
 		int[] bufferHandles = new int[1];
 		GLES20.glGenFramebuffers(1, bufferHandles, 0);
 		mFrameBufferHandle = bufferHandles[0];
@@ -239,15 +310,46 @@ public class RenderTarget extends AFrameTask {
 		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameBufferHandle);
 
 		checkGLError("Could not create framebuffer: ");
+		
+		
 		// -- add the texture directly. we can afford to do this because the create()
 		//    method is called in a thread safe manner.
 		TextureManager.getInstance().taskAdd(mTexture);
-				
-		GLES20.glFramebufferTexture2D(
-			      GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, mTexture.getTextureId(), 0);
-		checkGLError("Could not create framebuffer 2: ");
-		
+		if (mDepthBuffer)
+			TextureManager.getInstance().taskAdd(mDepthTexture);
+
 /*
+		if (mDepthBuffer)
+		{
+			int[] tex = new int[2];
+			GLES20.glGenTextures(2, tex, 0);
+			
+			  GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[0]);
+			  GLES20.glTexImage2D(
+			      GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, mWidth, mHeight,
+			      0, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, null);
+			  GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+			  GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+			  GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+			  GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+			  GLES20.glFramebufferTexture2D(
+			      GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, tex[0], 0);
+			  
+			  GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, tex[1]);
+			  GLES20.glTexImage2D(
+				      GLES20.GL_TEXTURE_2D, 0, GLES20.GL_DEPTH_COMPONENT16, mWidth, mHeight,
+				      0, GLES20.GL_DEPTH_COMPONENT, GLES20.GL_UNSIGNED_INT, null);
+			  GLES20.glFramebufferTexture2D(
+			      GLES20.GL_FRAMEBUFFER, GLES20.GL_DEPTH_ATTACHMENT, GLES20.GL_TEXTURE_2D, tex[1], 0);
+
+			  GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
+
+			  mTexture.setTextureId(tex[0]);
+			  mDepthTexture.setTextureId(tex[1]);
+
+			checkGLError("Could not create depth buffer: ");
+		}
+
 		if (mStencilBuffer)
 		{
 			
@@ -308,14 +410,19 @@ public class RenderTarget extends AFrameTask {
 		if (error != GLES20.GL_NO_ERROR)
 		{
 			String description = GLU.gluErrorString(error);
-			RajLog.e(ex + "[" + error + "]: " + description);
-			throw new RuntimeException(ex + "[" + error + "]: " + description);
+
+			throw new RuntimeException(ex + ": " + description);
 		}
 	}
 
 	public RenderTargetTexture getTexture() {
 		return mTexture;
 	}
+
+	public RenderTargetTexture getDepthTexture() {
+		return mDepthTexture;
+	}
+
 	@Override
 	public TYPE getFrameTaskType() {
 		return TYPE.RENDER_TARGET;

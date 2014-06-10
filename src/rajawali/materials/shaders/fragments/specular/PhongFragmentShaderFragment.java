@@ -15,7 +15,6 @@ package rajawali.materials.shaders.fragments.specular;
 import java.util.List;
 
 import rajawali.lights.ALight;
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.methods.DiffuseMethod.DiffuseShaderVar;
 import rajawali.materials.methods.SpecularMethod.SpecularShaderVar;
 import rajawali.materials.shaders.IShaderFragment;
@@ -145,10 +144,5 @@ public class PhongFragmentShaderFragment extends ATextureFragmentShaderFragment 
 	public void setShininess(float shininess)
 	{
 		mShininess = shininess;
-	}
-	
-	@Override
-	public PluginInsertLocation getInsertLocation() {
-		return PluginInsertLocation.IGNORE;
 	}
 }

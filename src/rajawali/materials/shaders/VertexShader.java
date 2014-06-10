@@ -15,7 +15,6 @@ package rajawali.materials.shaders;
 import java.util.List;
 
 import rajawali.lights.ALight;
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.plugins.SkeletalAnimationMaterialPlugin.SkeletalAnimationShaderVar;
 import rajawali.materials.shaders.fragments.animation.SkeletalAnimationVertexShaderFragment;
 import android.graphics.Color;
@@ -141,7 +140,6 @@ public class VertexShader extends AShader {
 		for (int i = 0; i < mShaderFragments.size(); i++)
 		{
 			IShaderFragment fragment = mShaderFragments.get(i);
-			if(fragment.getInsertLocation() == PluginInsertLocation.POST_TRANSFORM) continue;
 			fragment.setStringBuilder(mShaderSB);
 			fragment.main();
 			if(fragment.getShaderId().equals(SkeletalAnimationVertexShaderFragment.SHADER_ID))
@@ -165,15 +163,6 @@ public class VertexShader extends AShader {
 			mvCubeTextureCoord.assign(castVec3(maPosition));
 		mvColor.assign(mgColor);
 		mvEyeDir.assign(castVec3(muModelViewMatrix.multiply(mgPosition)));
-		
-		for (int i = 0; i < mShaderFragments.size(); i++)
-		{
-			IShaderFragment fragment = mShaderFragments.get(i);
-			if(fragment.getInsertLocation() == PluginInsertLocation.POST_TRANSFORM) {
-				fragment.setStringBuilder(mShaderSB);
-				fragment.main();
-			}
-		}
 	}
 
 	@Override

@@ -1,50 +1,104 @@
-/**
- * Copyright 2013 Dennis Ippel
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
- * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- */
 package rajawali.postprocessing.passes;
 
 import rajawali.framework.R;
 
+/*
+ * BlurFilter initially authored by Andrew Jo (andrewjo@gmail.com)
+ * 
+ * Two-pass blur can be achieved by adding this filter twice, once
+ * as horizontal blur and again as vertical blur.
+ * 
+ * Portions of fragment shader referenced from Devmaster article 
+ * (http://devmaster.net/posts/3100/shader-effects-glow-and-bloom)
+ * edited for simplicity.
+ */
 public class BlurPass extends EffectPass {
-	public enum Direction {
+	public enum Orientation {
 		HORIZONTAL,
 		VERTICAL
 	};
 	
-	protected Direction mBlurDirection;
-	protected float[] mDirection;
-	protected float mRadius;
-	protected float mResolution;
+	protected int muBlurAmountHandle;
+	protected int muBlurScaleHandle;
+	protected int muBlurStrengthHandle;
+	protected int muOrientationHandle;
+	protected int muScreenHeightHandle;
+	protected int muScreenWidthHandle;
+
+	protected int mBlurAmount;
+	protected float mBlurScale;
+	protected float mBlurStrength;
+	protected float mScreenHeight;
+	protected float mScreenWidth;
+	protected Orientation mOrientation;
 	
-	public BlurPass(Direction direction, float radius, int screenWidth, int screenHeight) {
+	public BlurPass(float screenWidth, float screenHeight, int blurAmount, float blurScale, float blurStrength, Orientation orientation) {
 		super();
-		mDirection = direction == Direction.HORIZONTAL ? new float[]{1, 0} : new float[]{0, 1};
-		mRadius = radius;
-		mBlurDirection = direction;
-		setSize(screenWidth, screenHeight);
+		this.mScreenWidth = screenWidth;
+		this.mScreenHeight = screenHeight;
+		this.mBlurAmount = blurAmount;
+		this.mBlurScale = blurScale;
+		this.mBlurStrength = blurStrength;
+		this.mOrientation = orientation;
 		createMaterial(R.raw.minimal_vertex_shader, R.raw.blur_fragment_shader);
 	}
 	
 	public void setShaderParams()
 	{
 		super.setShaderParams();
-		mFragmentShader.setUniform2fv("uDirection", mDirection);
-		mFragmentShader.setUniform1f("uRadius", mRadius);
-		mFragmentShader.setUniform1f("uResolution", mResolution);
+		mFragmentShader.setUniform1i("uBlurAmount", mBlurAmount);
+		mFragmentShader.setUniform1f("uBlurScale", mBlurScale);
+		mFragmentShader.setUniform1f("uBlurStrength", mBlurStrength);
+		switch (mOrientation) {
+			case HORIZONTAL:
+				mFragmentShader.setUniform1i("uOrientation", 0);
+				break;
+			case VERTICAL:
+				mFragmentShader.setUniform1i("uOrientation", 1);
+				break;
+		}
+		mFragmentShader.setUniform1f("uScreenHeight", mScreenHeight);
+		mFragmentShader.setUniform1f("uScreenWidth", mScreenHeight);
 	}
 
-	@Override
-	public void setSize(int width, int height) {
-		super.setSize(width, height);
-		mResolution = mBlurDirection == Direction.HORIZONTAL ? width : height;
+	
+	public int getBlurAmount() {
+		return this.mBlurAmount;
+	}
+
+	public float getBlurScale() {
+		return this.mBlurScale;
+	}
+
+	public float getBlurStrength() {
+		return this.mBlurStrength;
+	}
+
+	public float getScreenWidth() {
+		return this.mScreenWidth;
+	}
+
+	public float getScreenHeight() {
+		return this.mScreenHeight;
+	}
+
+	public void setBlurAmount(int blurAmount) {
+		this.mBlurAmount = blurAmount;
+	}
+
+	public void setBlurScale(float blurScale) {
+		this.mBlurScale = blurScale;
+	}
+
+	public void setBlurStrength(float blurStrength) {
+		this.mBlurStrength = blurStrength;
+	}
+
+	public void setScreenHeight(float screenHeight) {
+		this.mScreenHeight = screenHeight;
+	}
+
+	public void setScreenWidth(float screenWidth) {
+		this.mScreenWidth = screenWidth;
 	}
 }

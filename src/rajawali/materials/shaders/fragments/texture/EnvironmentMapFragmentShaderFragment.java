@@ -14,7 +14,6 @@ package rajawali.materials.shaders.fragments.texture;
 
 import java.util.List;
 
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.shaders.IShaderFragment;
 import rajawali.materials.textures.ATexture;
 import rajawali.materials.textures.ATexture.TextureType;
@@ -70,10 +69,5 @@ public class EnvironmentMapFragmentShaderFragment extends ATextureFragmentShader
 	
 	public String getShaderId() {
 		return SHADER_ID;
-	}
-	
-	@Override
-	public PluginInsertLocation getInsertLocation() {
-		return PluginInsertLocation.IGNORE;
 	}
 }

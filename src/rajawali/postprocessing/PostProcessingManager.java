@@ -16,20 +16,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import rajawali.materials.textures.ATexture;
+import rajawali.materials.Material;
 import rajawali.materials.textures.ATexture.FilterType;
 import rajawali.materials.textures.ATexture.WrapType;
 import rajawali.postprocessing.IPass.PassType;
 import rajawali.postprocessing.IPostProcessingComponent.PostProcessingComponentType;
-import rajawali.postprocessing.passes.CopyPass;
 import rajawali.postprocessing.passes.EffectPass;
 import rajawali.primitives.ScreenQuad;
+import rajawali.primitives.Sphere;
 import rajawali.renderer.RajawaliRenderer;
 import rajawali.renderer.RenderTarget;
 import rajawali.scene.RajawaliScene;
 import rajawali.scenegraph.IGraphNode.GRAPH_TYPE;
+import rajawali.util.RajLog;
+import android.content.Context;
 import android.graphics.Bitmap.Config;
+import android.graphics.Point;
 import android.opengl.GLES20;
+import android.view.Display;
+import android.view.WindowManager;
 
 public class PostProcessingManager {
 
@@ -43,8 +48,6 @@ public class PostProcessingManager {
 	protected List<IPass> mPasses;
 	protected boolean mComponentsDirty = false;
 	protected int mNumPasses;
-	protected int mWidth;
-	protected int mHeight;
 	
 	protected EffectPass mCopyPass;
 
@@ -52,47 +55,54 @@ public class PostProcessingManager {
 	protected RajawaliScene mScene;
 
 	public PostProcessingManager(RajawaliRenderer renderer) {
-		this(renderer, -1, -1);
-	}
-	
-	public PostProcessingManager(RajawaliRenderer renderer, int width, int height) {
-		mRenderer = renderer;
-
-		if(width == -1 && height == -1) {
-			if (mRenderer.getSceneInitialized()) {
-				width = mRenderer.getCurrentViewportWidth();
-				height = mRenderer.getCurrentViewportHeight();
-			} else {
-				width = mRenderer.getViewportWidth();
-				height = mRenderer.getViewportHeight();
-			}
-		}		
-
-		mWidth = width;
-		mHeight = height;
-		
 		mScreenQuad = new ScreenQuad();
+		mRenderer = renderer;
 		mScene = new RajawaliScene(mRenderer, GRAPH_TYPE.NONE);
 
-		mRenderTarget1 = new RenderTarget("rt1" + hashCode(), width, height, 0, 0,
+		int width, height;
+		if (renderer.getSceneInitialized()) {
+			width = mRenderer.getViewportWidth();
+			height = mRenderer.getViewportHeight();
+		} else {
+			WindowManager wm = (WindowManager) renderer.getContext()
+					.getSystemService(Context.WINDOW_SERVICE);
+			Display display = wm.getDefaultDisplay();
+			Point size = new Point();
+			display.getSize(size);
+			width = size.x;
+			height = size.y;
+		}
+
+		mRenderTarget1 = new RenderTarget("renderTarget1", width, height, 0, 0, true,
 				false, false, GLES20.GL_TEXTURE_2D, Config.ARGB_8888,
 				FilterType.LINEAR, WrapType.CLAMP);
-		mRenderTarget2 = new RenderTarget("rt2" + hashCode(), width, height, 0, 0,
+		mRenderTarget2 = new RenderTarget("renderTarget2", width, height, 0, 0, true,
 				false, false, GLES20.GL_TEXTURE_2D, Config.ARGB_8888,
 				FilterType.LINEAR, WrapType.CLAMP);
 		
 		mWriteBuffer = mRenderTarget1;
 		mReadBuffer = mRenderTarget2;
 
-		mCopyPass = new EffectPass(new CopyPass());
+		mCopyPass = new EffectPass(new CopyEffect());
 		mComponents = Collections.synchronizedList(new CopyOnWriteArrayList<IPostProcessingComponent>());
 		mPasses = Collections.synchronizedList(new CopyOnWriteArrayList<IPass>());
 
 		mRenderer.addRenderTarget(mWriteBuffer);
 		mRenderer.addRenderTarget(mReadBuffer);
 		
+		//mRenderer.getTextureManager().addTexture(mWriteBuffer.getTexture());
+		//mRenderer.getTextureManager().addTexture(mWriteBuffer.getDepthTexture());
+		//mRenderer.getTextureManager().addTexture(mReadBuffer.getTexture());
+		//mRenderer.getTextureManager().addTexture(mReadBuffer.getDepthTexture());
+		
 		mScene.addChild(mScreenQuad);
 		mRenderer.addScene(mScene);
+		
+		Sphere sphere = new Sphere(1, 20, 20);
+		sphere.setColor(0xff0000);
+		Material sphereMaterial = new Material();
+		sphere.setMaterial(sphereMaterial);
+		mScene.addChild(sphere);
 	}
 
 	/**
@@ -108,21 +118,9 @@ public class PostProcessingManager {
 		mComponents.add(pass);
 		mComponentsDirty = true;
 	}
-	
-	public void addEffect(IPostProcessingEffect multiPass) {
-		multiPass.initialize(mRenderer);
-		mComponents.addAll(multiPass.getPasses());
-		mComponentsDirty = true;
-	}
 
 	public void insertPass(int index, IPass pass) {
 		mComponents.add(index, pass);
-		mComponentsDirty = true;
-	}
-	
-	public void insertEffect(int index, IPostProcessingEffect multiPass) {
-		multiPass.initialize(mRenderer);
-		mComponents.addAll(index, multiPass.getPasses());
 		mComponentsDirty = true;
 	}
 
@@ -131,27 +129,56 @@ public class PostProcessingManager {
 		mComponentsDirty = true;
 	}
 	
-	public void removeEffect(IPostProcessingEffect multiPass) {
-		mComponents.removeAll(multiPass.getPasses());
+	public void addEffect(IPostProcessingEffect effect) {
+		mComponents.add(effect);
 		mComponentsDirty = true;
+		effect.setManager(this);
 	}
 	
+	public void insertEffect(IPostProcessingEffect effect) {
+		mComponents.add(effect);
+		mComponentsDirty = true;
+		effect.setManager(this);
+	}
+	
+	public void removeEffect(IPostProcessingEffect effect) {
+		mComponents.remove(effect);
+		mComponentsDirty = true;
+		effect.setManager(null);
+	}
+
 	public void setSize(int width, int height) {
-		mRenderTarget1.setWidth(width);
-		mRenderTarget1.setHeight(height);
-		mRenderTarget2.setWidth(width);
-		mRenderTarget2.setHeight(height);
-		
-		for(IPass pass : mPasses) {
-			pass.setSize(width, height);
-		}
-		
-		//reset(renderTarget);
-		mWidth = width;
-		mHeight = height;
+		RenderTarget renderTarget = mRenderTarget1.clone();
+		renderTarget.setWidth(width);
+		renderTarget.setHeight(height);
+		reset(renderTarget);
 	}
 
 	public void reset(RenderTarget renderTarget) {
+		if (renderTarget == null) {
+			int width, height;
+			if (mRenderer.getSceneInitialized()) {
+				width = mRenderer.getViewportWidth();
+				height = mRenderer.getViewportHeight();
+			} else {
+				WindowManager wm = (WindowManager) mRenderer.getContext()
+						.getSystemService(Context.WINDOW_SERVICE);
+				Display display = wm.getDefaultDisplay();
+				Point size = new Point();
+				display.getSize(size);
+				width = size.x;
+				height = size.y;
+			}
+			mRenderTarget1 = new RenderTarget(width, height, 0, 0, false,
+					false, false, GLES20.GL_UNSIGNED_BYTE, Config.ARGB_8888,
+					FilterType.LINEAR, WrapType.CLAMP);
+		} else {
+			mRenderTarget1 = renderTarget;
+		}
+
+		mRenderTarget2 = mRenderTarget1.clone();
+		mWriteBuffer = mRenderTarget1;
+		mReadBuffer = mRenderTarget2;
 	}
 
 	public void render(double deltaTime) {
@@ -170,6 +197,7 @@ public class PostProcessingManager {
 
 		for (int i = 0; i < mNumPasses; i++) {
 			pass = mPasses.get(i);
+			RajLog.i("________________ PASS " + i + ", " + pass.getPassType());
 			if (!pass.isEnabled())
 				continue;
 
@@ -178,7 +206,7 @@ public class PostProcessingManager {
 			pass.render(type == PassType.RENDER ? mRenderer.getCurrentScene() : mScene, mRenderer,
 					mScreenQuad, mWriteBuffer, mReadBuffer, deltaTime);
 
-			if (pass.needsSwap() && i < mNumPasses - 1) {
+			if (pass.needsSwap()) {
 				if (maskActive) {
 					GLES20.glStencilFunc(GLES20.GL_NOTEQUAL, 1, 0xffffffff);
 
@@ -195,11 +223,9 @@ public class PostProcessingManager {
 				maskActive = true;
 			else if (type == PassType.CLEAR)
 				maskActive = false;
+			
+			RajLog.i("________________ END PASS");
 		}
-	}
-	
-	public ATexture getTexture() {
-		return mWriteBuffer.getTexture();
 	}
 	
 	private void updatePassesList()

@@ -12,7 +12,6 @@
  */
 package rajawali.materials.shaders.fragments.animation;
 
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.plugins.SkeletalAnimationMaterialPlugin.SkeletalAnimationShaderVar;
 import rajawali.materials.shaders.AShader;
 import rajawali.materials.shaders.IShaderFragment;
@@ -171,10 +170,5 @@ public class SkeletalAnimationVertexShaderFragment extends AShader implements IS
 		}
 		GLES20.glUniformMatrix4fv(muBoneMatrixHandle, mNumJoints, false, 
 				ArrayUtils.convertDoublesToFloats(boneMatrix, mTempBoneArray), 0);
-	}
-	
-	@Override
-	public PluginInsertLocation getInsertLocation() {
-		return PluginInsertLocation.IGNORE;
 	}
 }

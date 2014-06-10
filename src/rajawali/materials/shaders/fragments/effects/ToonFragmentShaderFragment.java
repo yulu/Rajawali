@@ -15,7 +15,6 @@ package rajawali.materials.shaders.fragments.effects;
 import java.util.List;
 
 import rajawali.lights.ALight;
-import rajawali.materials.Material.PluginInsertLocation;
 import rajawali.materials.methods.DiffuseMethod.DiffuseShaderVar;
 import rajawali.materials.shaders.AShader;
 import rajawali.materials.shaders.IShaderFragment;
@@ -161,10 +160,5 @@ public class ToonFragmentShaderFragment extends AShader implements IShaderFragme
 		mToonColor1 = toonColor1; 
 		mToonColor2 = toonColor2; 
 		mToonColor3 = toonColor3; 
-	}
-	
-	@Override
-	public PluginInsertLocation getInsertLocation() {
-		return PluginInsertLocation.IGNORE;
 	}
 }
