@@ -27,6 +27,7 @@ public interface IShaderFragment {
 	Hashtable<String, ShaderVar> getConsts();
 	void setStringBuilder(StringBuilder stringBuilder);
 	void main();
+	void mainRaw(StringBuilder stringBuilder);
 	void applyParams();
 	void setLocations(int programHandle);
 }

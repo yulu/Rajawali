@@ -168,8 +168,13 @@ public abstract class AShader extends AShaderBase {
 	}
 	
 	/**
-	 * TODO: add main(something), shader directly by GLSL...
+	 * TODO: add mainRaw(StringBuilder s), shader directly by GLSL...
+	 * @author Yu Lu
 	 */
+	
+	public void mainRaw(StringBuilder s){
+		//raw shader implmentation, add
+	}
 
 	/**
 	 * Add a preprocessor directive like #define, #extension, #version etc.
@@ -747,6 +752,7 @@ public abstract class AShader extends AShaderBase {
 		
 		s.append("\nvoid main() {\n");
 		main();
+		mainRaw(s); //append raw shader implementation to s
 		s.append("}\n");
 		
 		mShaderString = s.toString();

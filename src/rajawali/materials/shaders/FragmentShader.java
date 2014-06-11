@@ -94,6 +94,7 @@ public class FragmentShader extends AShader {
 			IShaderFragment fragment = mShaderFragments.get(i);
 			fragment.setStringBuilder(mShaderSB);
 			fragment.main();
+			fragment.mainRaw(mShaderSB);
 		}
 		
 		GL_FRAG_COLOR.assign(mgColor);
