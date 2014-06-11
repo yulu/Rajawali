@@ -142,6 +142,7 @@ public class VertexShader extends AShader {
 			IShaderFragment fragment = mShaderFragments.get(i);
 			fragment.setStringBuilder(mShaderSB);
 			fragment.main();
+			fragment.mainRaw(mShaderSB);
 			if(fragment.getShaderId().equals(SkeletalAnimationVertexShaderFragment.SHADER_ID))
 				hasSkeletalAnimation = true;
 		}
