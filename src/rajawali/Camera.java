@@ -117,6 +117,32 @@ public class Camera extends ATransformable3D {
 			setProjectionMatrix(width, height);
 		}		
 	}
+	
+	public void setProjectionMatrix(double[] matrix){
+		synchronized(mFrustumLock){
+			mProjMatrix.setAll(new double[] {
+					matrix[0],
+					matrix[1],
+					matrix[2],
+					matrix[3],
+					
+					matrix[4],
+					matrix[5],
+					matrix[6],
+					matrix[7],
+					
+					matrix[8],
+					matrix[9],
+					matrix[10],
+					matrix[11],
+					
+					matrix[12],
+					matrix[13],
+					matrix[14],
+					matrix[15]
+			});
+		}
+	}
 
     public void setUpAxis(double x, double y, double z) {
     	synchronized (mFrustumLock) {
