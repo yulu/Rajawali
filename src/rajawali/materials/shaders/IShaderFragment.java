@@ -30,4 +30,6 @@ public interface IShaderFragment {
 	void mainRaw(StringBuilder stringBuilder);
 	void applyParams();
 	void setLocations(int programHandle);
+	void bindTextures(int nextIndex);
+	void unbindTextures();
 }

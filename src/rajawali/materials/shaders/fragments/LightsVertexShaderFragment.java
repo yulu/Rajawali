@@ -317,4 +317,17 @@ public class LightsVertexShaderFragment extends AShader implements IShaderFragme
 		mAmbientIntensity[1] = ambientIntensity[1];
 		mAmbientIntensity[2] = ambientIntensity[2];
 	}
+<<<<<<< HEAD
+=======
+	
+	@Override
+	public PluginInsertLocation getInsertLocation() {
+		return PluginInsertLocation.IGNORE;
+	}
+	
+	@Override
+	public void bindTextures(int nextIndex) {}
+	@Override
+	public void unbindTextures() {}
+>>>>>>> upstream/master
 }

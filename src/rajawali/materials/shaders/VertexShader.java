@@ -17,6 +17,7 @@ import java.util.List;
 import rajawali.lights.ALight;
 import rajawali.materials.plugins.SkeletalAnimationMaterialPlugin.SkeletalAnimationShaderVar;
 import rajawali.materials.shaders.fragments.animation.SkeletalAnimationVertexShaderFragment;
+import rajawali.math.Matrix4;
 import android.graphics.Color;
 import android.opengl.GLES20;
 
@@ -225,8 +226,8 @@ public class VertexShader extends AShader {
 		GLES20.glUniformMatrix4fv(muMVPMatrixHandle, 1, false, mvpMatrix, 0);
 	}
 
-	public void setModelMatrix(float[] modelMatrix) {
-		GLES20.glUniformMatrix4fv(muModelMatrixHandle, 1, false, modelMatrix, 0);
+	public void setModelMatrix(Matrix4 modelMatrix) {
+		GLES20.glUniformMatrix4fv(muModelMatrixHandle, 1, false, modelMatrix.getFloatValues(), 0);
 	}
 
 	public void setNormalMatrix(float[] normalMatrix) {

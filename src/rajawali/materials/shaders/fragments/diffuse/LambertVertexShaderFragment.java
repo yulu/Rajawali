@@ -26,5 +26,18 @@ public class LambertVertexShaderFragment extends AShader implements IShaderFragm
 	public String getShaderId() {
 		return SHADER_ID;
 	}
+<<<<<<< HEAD
 
+=======
+	
+	@Override
+	public void bindTextures(int nextIndex) {}
+	@Override
+	public void unbindTextures() {}
+	
+	@Override
+	public PluginInsertLocation getInsertLocation() {
+		return PluginInsertLocation.IGNORE;
+	}
+>>>>>>> upstream/master
 }

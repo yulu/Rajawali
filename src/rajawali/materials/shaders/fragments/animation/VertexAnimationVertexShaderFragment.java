@@ -93,4 +93,17 @@ public class VertexAnimationVertexShaderFragment extends AShader implements ISha
 	public void setInterpolation(double interpolation) {
 		GLES20.glUniform1f(muInterpolationHandle, (float) interpolation);
 	}
+<<<<<<< HEAD
+=======
+	
+	@Override
+	public PluginInsertLocation getInsertLocation() {
+		return PluginInsertLocation.IGNORE;
+	}
+	
+	@Override
+	public void bindTextures(int nextIndex) {}
+	@Override
+	public void unbindTextures() {}
+>>>>>>> upstream/master
 }

@@ -9,7 +9,11 @@ import rajawali.scene.RajawaliScene;
 
 public interface IPass extends IPostProcessingComponent {
 	public static enum PassType {
+<<<<<<< HEAD
 		RENDER, EFFECT, MASK, CLEAR
+=======
+		RENDER, DEPTH, EFFECT, MASK, CLEAR, MULTIPASS
+>>>>>>> upstream/master
 	};
 	
 	boolean isClear();

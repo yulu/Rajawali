@@ -24,12 +24,19 @@ import rajawali.Object3D;
 import rajawali.animation.Animation3D;
 import rajawali.lights.ALight;
 import rajawali.materials.Material;
+<<<<<<< HEAD
+=======
+import rajawali.materials.plugins.FogMaterialPlugin;
+import rajawali.materials.plugins.FogMaterialPlugin.FogParams;
+import rajawali.materials.plugins.ShadowMapMaterialPlugin;
+>>>>>>> upstream/master
 import rajawali.materials.textures.ATexture;
 import rajawali.materials.textures.ATexture.TextureException;
 import rajawali.materials.textures.CubeMapTexture;
 import rajawali.materials.textures.Texture;
 import rajawali.math.Matrix4;
 import rajawali.math.vector.Vector3;
+import rajawali.postprocessing.materials.ShadowMapMaterial;
 import rajawali.primitives.Cube;
 import rajawali.renderer.AFrameTask;
 import rajawali.renderer.EmptyTask;
@@ -86,6 +93,7 @@ public class RajawaliScene extends AFrameTask {
 	protected boolean mUsesCoverageAa;
 	protected boolean mEnableDepthBuffer = true;
 	protected boolean mAlwaysClearColorBuffer = true;
+	private ShadowMapMaterial mShadowMapMaterial;
 
 	private List<Object3D> mChildren;
 	private List<Animation3D> mAnimations;
@@ -106,6 +114,7 @@ public class RajawaliScene extends AFrameTask {
 	*/
 	private Camera mNextCamera;
 	private final Object mNextCameraLock = new Object();
+	private boolean mDebugCameras = false;
 	
 	/**
 	 * Frame task queue. Adding, removing or replacing members
@@ -649,6 +658,10 @@ public class RajawaliScene extends AFrameTask {
 	}
 	
 	public void render(double deltaTime, RenderTarget renderTarget) {
+		render(deltaTime, renderTarget, null);
+	}
+	
+	public void render(double deltaTime, RenderTarget renderTarget, Material sceneMaterial) {
 		performFrameTasks(); //Handle the task queue
 		synchronized (mNextSkyboxLock) {
 			//Check if we need to switch the skybox, and if so, do it.
@@ -662,7 +675,6 @@ public class RajawaliScene extends AFrameTask {
 			if (mNextCamera != null) {
 				mCamera = mNextCamera;
 				mNextCamera = null;
-				mCamera.setProjectionMatrix(mRenderer.getCurrentViewportWidth(), mRenderer.getCurrentViewportHeight());
 			}
 		}
 		
@@ -716,7 +728,7 @@ public class RajawaliScene extends AFrameTask {
 			GLES20.glDepthMask(false);
 
 			mSkybox.setPosition(mCamera.getX(), mCamera.getY(), mCamera.getZ());
-			mSkybox.render(mCamera, mVPMatrix, mPMatrix, mVMatrix, pickerInfo);
+			mSkybox.render(mCamera, mVPMatrix, mPMatrix, mVMatrix, null);
 
 			if (mEnableDepthBuffer) {
 				GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -734,22 +746,54 @@ public class RajawaliScene extends AFrameTask {
 					anim.update(deltaTime);
 			}
 		}
+		
+		Material sceneMat = pickerInfo == null ? sceneMaterial : pickerInfo.getPicker().getMaterial();
+		
+		if(sceneMat != null) {
+			sceneMat.useProgram();
+			sceneMat.bindTextures();
+		}		
 
-		synchronized (mChildren) {
-			for (int i = 0, j = mChildren.size(); i < j; ++i) 
-				mChildren.get(i).render(mCamera, mVPMatrix, mPMatrix, mVMatrix, pickerInfo);
+		synchronized (mChildren) {			
+			for (int i = 0, j = mChildren.size(); i < j; ++i) {
+				Object3D child = mChildren.get(i);
+				boolean blendingEnabled = child.isBlendingEnabled();
+				if(pickerInfo != null && child.isPickingEnabled()) {
+					child.setBlendingEnabled(false);
+					pickerInfo.getPicker().getMaterial().setColor(child.getPickingColor());
+				}
+				child.render(mCamera, mVPMatrix, mPMatrix, mVMatrix, sceneMat);
+				child.setBlendingEnabled(blendingEnabled);
+			}
+		}
+		
+		if(mDebugCameras) {
+			for(Camera camera : mCameras) {
+				if(camera == mCamera) continue;
+				camera.setProjectionMatrix(mRenderer.getCurrentViewportWidth(), mRenderer.getCurrentViewportHeight());
+				Matrix4 viewMatrix = camera.getViewMatrix();
+				Matrix4 projectionMatrix = camera.getProjectionMatrix();
+				Matrix4 viewProjectionMatrix = projectionMatrix.clone().multiply(viewMatrix);
+				viewProjectionMatrix.inverse();
+				camera.updateFrustum(viewProjectionMatrix);
+				camera.drawFrustum(mCamera, mVPMatrix, mPMatrix, mVMatrix, null);
+			}
 		}
 
 		if (mDisplaySceneGraph) {
 			mSceneGraph.displayGraph(mCamera, mVPMatrix, mPMatrix, mVMatrix);
         }
 		
+		if(sceneMat != null) {
+			sceneMat.unbindTextures();
+		}
+		
 		if (pickerInfo != null) {
 			ObjectColorPicker.createColorPickingTexture(pickerInfo);
 			pickerInfo.getPicker().unbindFrameBuffer();
 			pickerInfo = null;
 			mPickerInfo = null;
-			render(deltaTime, renderTarget); //TODO Possible timing error here
+			render(deltaTime, renderTarget, sceneMaterial); //TODO Possible timing error here
 		}
 
 		synchronized (mPlugins) {
@@ -1372,6 +1416,10 @@ public class RajawaliScene extends AFrameTask {
 		mLights.clear();
 	}
 	
+	public List<ALight> getLights() {
+		return mLights;
+	}
+	
 	/**
 	 * Creates a shallow copy of the internal lights list. 
 	 * 
@@ -1464,6 +1512,7 @@ public class RajawaliScene extends AFrameTask {
 		if (mSceneGraph != null) {
 			mSceneGraph.addObject(child);
 		}
+		addShadowMapMaterialPlugin(child, mShadowMapMaterial == null ? null : mShadowMapMaterial.getMaterialPlugin());
 	}
 	
 	/**
@@ -1702,6 +1751,10 @@ public class RajawaliScene extends AFrameTask {
 		return mAlwaysClearColorBuffer;
 	}
 	
+	public void setDebugCameras(boolean debugCameras) {
+		mDebugCameras = debugCameras;
+	}
+	
 	/**
 	 * Updates the projection matrix of the current camera for new view port dimensions.
 	 * 
@@ -1716,9 +1769,28 @@ public class RajawaliScene extends AFrameTask {
 		mUsesCoverageAa = value;
 	}
 	
+	public void setShadowMapMaterial(ShadowMapMaterial material) {
+		mShadowMapMaterial = material;
+	}
+	
+	private void addShadowMapMaterialPlugin(Object3D o, ShadowMapMaterialPlugin materialPlugin) {
+		Material m = o.getMaterial();
+		
+		if(m != null && m.lightingEnabled()) {
+			if(materialPlugin != null) {
+				m.addPlugin(materialPlugin);			
+			} else if(mShadowMapMaterial != null) {
+				m.removePlugin(mShadowMapMaterial.getMaterialPlugin());
+			}
+		}
+		
+		for(int i=0; i<o.getNumChildren(); i++)
+			addShadowMapMaterialPlugin(o.getChildAt(i), materialPlugin);
+	}
+	
 	/**
 	 * Set if the scene graph should be displayed. How it is 
-	 * displayed is left to the implimentation of the graph.
+	 * displayed is left to the implementation of the graph.
 	 * 
 	 * @param display If true, the scene graph will be displayed.
 	 */

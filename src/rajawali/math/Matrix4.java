@@ -145,6 +145,14 @@ public final class Matrix4 {
 		return this;
 	}
 	
+	public Matrix4 setAll(float[] matrix) {
+		m[0] = matrix[0];	m[1] = matrix[1];	m[2] = matrix[2];	m[3] = matrix[3];
+		m[4] = matrix[4];	m[5] = matrix[5];	m[6] = matrix[6];	m[7] = matrix[7];
+		m[8] = matrix[8];	m[9] = matrix[9];	m[10] = matrix[10];	m[11] = matrix[11];
+		m[12] = matrix[12];	m[13] = matrix[13];	m[14] = matrix[14];	m[15] = matrix[15];
+		return this;
+	}
+	
 	/**
 	 * Sets the elements of this {@link Matrix4} based on the rotation represented by
 	 * the provided {@link Quaternion}. 
@@ -1072,6 +1080,13 @@ public final class Matrix4 {
 	 */
 	public void toArray(double[] doubleArray) {
 		System.arraycopy(m, 0, doubleArray, 0, 16);
+	}
+	
+	public void toFloatArray(float[] floatArray) {
+		floatArray[0] = (float)m[0];	floatArray[1] = (float)m[1];	floatArray[2] = (float)m[2];	floatArray[3] = (float)m[3];
+		floatArray[4] = (float)m[4];	floatArray[5] = (float)m[5];	floatArray[6] = (float)m[6];	floatArray[7] = (float)m[7];
+		floatArray[8] = (float)m[8];	floatArray[9] = (float)m[9];	floatArray[10] = (float)m[10];	floatArray[11] = (float)m[11];
+		floatArray[12] = (float)m[12];	floatArray[13] = (float)m[13];	floatArray[14] = (float)m[14];	floatArray[15] = (float)m[15];		
 	}
 	
 	/**

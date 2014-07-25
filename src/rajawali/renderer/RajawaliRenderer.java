@@ -555,6 +555,12 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 			mMaterialManager.reset();
 			clearScenes();
 		} else if(mSceneCachingEnabled && mSceneInitialized) {
+			for(int i=0, j = mRenderTargets.size(); i < j; ++i) {
+				if(mRenderTargets.get(i).getFullscreen()) {
+					mRenderTargets.get(i).setWidth(mViewportWidth);
+					mRenderTargets.get(i).setHeight(mViewportHeight);
+				}
+			}
 			mTextureManager.taskReload();
 			mMaterialManager.taskReload();
 			reloadScenes();
@@ -566,7 +572,7 @@ public class RajawaliRenderer implements GLSurfaceView.Renderer, INode {
 		setViewPort(width, height);
 	}
 	
-	protected void setViewPort(int width, int height)
+	public void setViewPort(int width, int height)
 	{
 		mCurrentViewportWidth = width;
 		mCurrentViewportHeight = height;

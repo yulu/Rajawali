@@ -171,4 +171,17 @@ public class SkeletalAnimationVertexShaderFragment extends AShader implements IS
 		GLES20.glUniformMatrix4fv(muBoneMatrixHandle, mNumJoints, false, 
 				ArrayUtils.convertDoublesToFloats(boneMatrix, mTempBoneArray), 0);
 	}
+<<<<<<< HEAD
+=======
+	
+	@Override
+	public void bindTextures(int nextIndex) {}
+	@Override
+	public void unbindTextures() {}
+	
+	@Override
+	public PluginInsertLocation getInsertLocation() {
+		return PluginInsertLocation.IGNORE;
+	}
+>>>>>>> upstream/master
 }

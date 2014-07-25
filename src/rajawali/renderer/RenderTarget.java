@@ -43,6 +43,7 @@ public class RenderTarget extends AFrameTask {
 
 	protected boolean mDepthBuffer;
 	protected boolean mStencilBuffer;
+	protected boolean mFullscreen = true;
 
 	protected int mFrameBufferHandle;
 	protected int mDepthBufferHandle;
@@ -315,9 +316,24 @@ public class RenderTarget extends AFrameTask {
 		// -- add the texture directly. we can afford to do this because the create()
 		//    method is called in a thread safe manner.
 		TextureManager.getInstance().taskAdd(mTexture);
+<<<<<<< HEAD
 		if (mDepthBuffer)
 			TextureManager.getInstance().taskAdd(mDepthTexture);
 
+=======
+				
+		GLES20.glFramebufferTexture2D(
+			      GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, mTexture.getTextureId(), 0);
+		
+		checkGLError("Could not create framebuffer 2: ");
+		
+		GLES20.glGenRenderbuffers(1, bufferHandles, 0);
+		GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, bufferHandles[0]);
+		GLES20.glRenderbufferStorage(GLES20.GL_RENDERBUFFER, GLES20.GL_DEPTH_COMPONENT16, mWidth, mHeight);
+		GLES20.glFramebufferRenderbuffer(GLES20.GL_FRAMEBUFFER, GLES20.GL_DEPTH_ATTACHMENT, GLES20.GL_RENDERBUFFER, bufferHandles[0]);
+		
+		checkGLError("Could not create framebuffer 3: ");
+>>>>>>> upstream/master
 /*
 		if (mDepthBuffer)
 		{
@@ -363,13 +379,14 @@ public class RenderTarget extends AFrameTask {
 			checkGLError("Could not create stencil buffer: ");
 		}
 	*/
-		//GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, 0);
 		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
 	}
 
 	public void bind() {
 		GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, mFrameBufferHandle);
-
+		GLES20.glFramebufferTexture2D(
+			      GLES20.GL_FRAMEBUFFER, GLES20.GL_COLOR_ATTACHMENT0, GLES20.GL_TEXTURE_2D, mTexture.getTextureId(), 0);
+		
 		int status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER);
 		if (status != GLES20.GL_FRAMEBUFFER_COMPLETE) {
 			GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
@@ -387,6 +404,7 @@ public class RenderTarget extends AFrameTask {
 				break;
 			case GLES20.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
 				errorString = "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS: not all attached images have the same width and height.";
+				RajLog.i(mWidth + ", " + mHeight + " || " + mTexture.getWidth() + ", " + mTexture.getHeight());
 				break;
 			}
 			throw new RuntimeException(errorString);
@@ -415,6 +433,14 @@ public class RenderTarget extends AFrameTask {
 		}
 	}
 
+	public void setFullscreen(boolean fullscreen) {
+		mFullscreen = fullscreen;
+	}
+	
+	public boolean getFullscreen() {
+		return mFullscreen;
+	}
+	
 	public RenderTargetTexture getTexture() {
 		return mTexture;
 	}
@@ -431,5 +457,9 @@ public class RenderTarget extends AFrameTask {
 	public int getFrameBufferHandle()
 	{
 		return mFrameBufferHandle;
+	}
+	
+	public String getName() {
+		return mName;
 	}
 }

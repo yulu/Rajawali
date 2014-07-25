@@ -23,6 +23,7 @@ import rajawali.scene.RajawaliScene;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
+import android.opengl.GLES20;
 
 /**
  * <p>
@@ -202,9 +203,19 @@ public class RajawaliSideBySideRenderer extends RajawaliRenderer {
 
 		mViewportWidthHalf = (int) (mViewportWidth * .5f);
 
+<<<<<<< HEAD
 		mLeftRenderTarget = new RenderTarget(mViewportWidthHalf, mViewportHeight);
 		mRightRenderTarget = new RenderTarget(mViewportWidthHalf, mViewportHeight);
+=======
+		mLeftRenderTarget = new RenderTarget("sbsLeftRT", mViewportWidthHalf, mViewportHeight);
+		mLeftRenderTarget.setFullscreen(false);
+		mRightRenderTarget = new RenderTarget("sbsRightRT", mViewportWidthHalf, mViewportHeight);
+		mRightRenderTarget.setFullscreen(false);
+>>>>>>> upstream/master
 
+		mCameraLeft.setProjectionMatrix(mViewportWidthHalf, mViewportHeight);
+		mCameraRight.setProjectionMatrix(mViewportWidthHalf, mViewportHeight);
+		
 		addRenderTarget(mLeftRenderTarget);
 		addRenderTarget(mRightRenderTarget);
 
@@ -221,33 +232,37 @@ public class RajawaliSideBySideRenderer extends RajawaliRenderer {
 		mUserScene = getCurrentScene();
 
 		setRenderTarget(mLeftRenderTarget);
-		synchronized (mCameraOrientationLock) {
-			setViewPort(mViewportWidthHalf, mViewportHeight);
-			getCurrentScene().switchCamera(mCameraLeft);
-			mCameraLeft.setOrientation(mCameraOrientation);
-		}
+		getCurrentScene().switchCamera(mCameraLeft);
+		GLES20.glViewport(0, 0, mViewportWidthHalf, mViewportHeight);
+		mCameraLeft.setProjectionMatrix(mViewportWidthHalf, mViewportHeight);
+		mCameraLeft.setOrientation(mCameraOrientation);
 
 		render(deltaTime);
 
 		setRenderTarget(mRightRenderTarget);
 
-		synchronized (mCameraOrientationLock) {
-			getCurrentScene().switchCamera(mCameraRight);
-			mCameraRight.setOrientation(mCameraOrientation);
-		}
+		getCurrentScene().switchCamera(mCameraRight);
+		mCameraRight.setProjectionMatrix(mViewportWidthHalf, mViewportHeight);
+		mCameraRight.setOrientation(mCameraOrientation);
 
 		render(deltaTime);
 
 		switchSceneDirect(mSideBySideScene);
+		GLES20.glViewport(0, 0, mViewportWidth, mViewportHeight);
 
 		setRenderTarget(null);
-		setViewPort(mViewportWidth, mViewportHeight);
 
 		render(deltaTime);
 
-		switchScene(mUserScene);
+		switchSceneDirect(mUserScene);
 	}
 
+	public void setCameraOrientation(Quaternion cameraOrientation) {
+		synchronized (mCameraOrientationLock) {
+			mCameraOrientation.setAll(cameraOrientation);
+		}
+	}
+	
 	public void setSensorOrientation(float[] quaternion)
 	{
 		synchronized (mCameraOrientationLock) {
@@ -258,11 +273,12 @@ public class RajawaliSideBySideRenderer extends RajawaliRenderer {
 
 			mScratchQuaternion1.fromAngleAxis(Axis.X, -90);
 			mScratchQuaternion1.multiply(mCameraOrientation);
-
+	
 			mScratchQuaternion2.fromAngleAxis(Axis.Z, -90);
 			mScratchQuaternion1.multiply(mScratchQuaternion2);
 
 			mCameraOrientation.setAll(mScratchQuaternion1);
+		
 		}
 	}
 

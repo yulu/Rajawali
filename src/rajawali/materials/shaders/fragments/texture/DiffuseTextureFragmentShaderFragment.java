@@ -54,4 +54,15 @@ public class DiffuseTextureFragmentShaderFragment extends ATextureFragmentShader
 			color.assignAdd(texColor);
 		}
 	}
+<<<<<<< HEAD
+=======
+
+	public void bindTextures(int nextIndex) {}
+	public void unbindTextures() {}
+
+	@Override
+	public PluginInsertLocation getInsertLocation() {
+		return PluginInsertLocation.IGNORE;
+	}
+>>>>>>> upstream/master
 }

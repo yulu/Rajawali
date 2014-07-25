@@ -47,4 +47,15 @@ public class NormalMapFragmentShaderFragment extends ATextureFragmentShaderFragm
 			normal.assign(normalize(texNormal.add(normal)));
 		}
 	}
+<<<<<<< HEAD
+=======
+	
+	public void bindTextures(int nextIndex) {}
+	public void unbindTextures() {}
+
+	@Override
+	public PluginInsertLocation getInsertLocation() {
+		return PluginInsertLocation.IGNORE;
+	}
+>>>>>>> upstream/master
 }

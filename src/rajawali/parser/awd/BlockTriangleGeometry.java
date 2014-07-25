@@ -114,8 +114,9 @@ public class BlockTriangleGeometry extends ABaseObjectBlockParser {
 					break;
 				case 4: // Vertex normals
 					normals = new float[(int) (subLength / geoPrecisionSize)];
-					while (idx < normals.length)
+					while (idx < normals.length) {
 						normals[idx++] = (float) dis.readPrecisionNumber(blockHeader.globalPrecisionGeo);
+					}
 					break;
 				case 5: // Vertex tangents
 				case 6: // Joint index
