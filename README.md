@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ![Rajawali](http://www.rozengain.com/files/rajawali-logo.jpg)
 
 Rajawali is a 3D engine for Android based on OpenGL ES 2.0/3.0. It can be used for normal apps as well as live wallpapers.
@@ -78,4 +79,40 @@ Numerous apps and live wallpapers have been made with Rajawali. [Check them out!
 ## Learn Rajawali at a Training Center
 * [Android Game Development in India](http://virtualinfocom.com/android_game/android_game_development_institute.html)
 * [Android Application Programming in India](http://virtualinfocom.com/android_game_application_development_training.html)
+=======
+## Rajawali + Vuforia Integration
+
+[Vuforia SDK](https://www.vuforia.com/) is a product of Qualcomm Austria Research Center GmbH.
+is a product of Qualcomm Austria Research Center GmbH.
+
+This project integrates the (Rajawali 3D framework)[https://github.com/MasDennis/Rajawali] and the Vuforia Augmented Reality SDK.
+It is currently using Vuforia 2.0.31.
+
+Features:
+* Frame Markers
+* Image Targets
+* Cloud Recognition Targets
+* Cylinder Targets
+* Multi-Targets
+
+[http://www.youtube.com/watch?v=rjLa4K9Ffuo](http://www.youtube.com/watch?v=rjLa4K9Ffuo)
+
+## Setup
+
+1. Clone or download a copy of the Rajawali source code.
+2. Clone or download a copy of the RajawaliVuforia source code.
+3. Import the Rajawali project into Eclipse.
+4. In your project's settings, [add a library reference](https://developer.android.com/tools/projects/projects-eclipse.html#ReferencingLibraryProject) to Rajawali.
+5. In your project's settings, [add a library reference](https://developer.android.com/tools/projects/projects-eclipse.html#ReferencingLibraryProject) to RajawaliVuforia.
+
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-001.jpg)
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-002.jpg)
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-003.jpg)
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-004.jpg)
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-005.jpg)
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-006.jpg)
+![Rajawali + Vuforia](http://www.rozengain.com/files/rajawali/rajawali-vuforia-007.jpg)
+![Rajawali + Vuforia, Cylinder Target](http://www.rozengain.com/files/RajawaliWiki/rajawali-cylinder-target.png)
+![Rajawali + Vuforia, Multi Target](http://www.rozengain.com/files/RajawaliWiki/rajawali-vuforia-multi-targets.png)
+>>>>>>> upstream/master
 
